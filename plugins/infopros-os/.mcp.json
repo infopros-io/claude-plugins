@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "infopros-os": {
+      "type": "http",
+      "url": "https://mcp.infopros.app/mcp"
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "infopros",
+  "owner": { "name": "InfoPros", "url": "https://github.com/infopros-io" },
+  "metadata": { "description": "InfoPros OS tools for the InfoPros team's own assistants." },
+  "plugins": [
+    {
+      "name": "infopros-os",
+      "source": "./plugins/infopros-os",
+      "description": "Edit talking-head videos into finished reels with InfoPros OS, change them in plain words, and share them.",
+      "category": "productivity"
+    }
+  ]
+}
