@@ -13,20 +13,60 @@ The first time Claude uses a tool, it opens the InfoPros OS sign-in in your brow
 
 ### Install
 
-- **Claude Code:**
+Every way ends the same: the first time Claude uses an InfoPros OS tool, your browser opens the InfoPros OS sign-in.
+Sign in with your InfoPros account, and you are connected.
 
-  ```
-  /plugin marketplace add infopros-io/claude-plugins
-  /plugin install infopros-os@infopros
-  ```
+#### Claude Desktop (chat and Cowork): a few clicks
 
-- **Claude Desktop and Cowork:**
-  - **Your organization added the plugin:** it shows under Customize > Plugins.
-  - **Otherwise:** add the marketplace `infopros-io/claude-plugins` under Customize > Plugins, then install `infopros-os`.
-- **Only the tools, without the skill** (any assistant that supports remote MCP servers):
-  - **Claude:** Settings > Connectors > Add custom connector, with `https://mcp.infopros.app/mcp`.
-  - **Codex:** `codex mcp add infopros-os --url https://mcp.infopros.app/mcp`, then `codex mcp login infopros-os`.
-  - **ChatGPT:** add a connector with the same address.
+A prompt can't install plugins here, because Claude can't change its own app settings. It takes four clicks:
+
+1. Open **Customize** in the sidebar, then **Plugins**.
+2. Select **Add marketplace** and enter `infopros-io/claude-plugins`.
+3. Find **infopros-os** and select **Install**.
+4. Open the plugin's **Connectors** tab and select **Connect** next to `infopros-os`. Sign in with your InfoPros OS account.
+
+The plugin is saved to your Claude account, so it also works in chat and in Claude Code. If your organization already
+added it, it is under Customize > Plugins and you only need step 4.
+
+#### Claude Code, or the Code tab in Claude Desktop: paste a prompt
+
+Paste this into Claude Code:
+
+```text
+Install the InfoPros OS plugin for me. Run these two commands:
+claude plugin marketplace add infopros-io/claude-plugins
+claude plugin install infopros-os@infopros
+Then tell me to restart Claude Code, and after that to type /mcp, pick infopros-os and sign in with my InfoPros account.
+```
+
+Or type the commands yourself:
+
+```
+/plugin marketplace add infopros-io/claude-plugins
+/plugin install infopros-os@infopros
+```
+
+Restart Claude Code, type `/mcp`, pick `infopros-os` and sign in.
+
+#### Codex: paste a prompt
+
+Codex gets the tools without the skill. Paste this into Codex:
+
+```text
+Connect me to InfoPros OS. Run:
+codex mcp add infopros-os --url https://mcp.infopros.app/mcp
+codex mcp login infopros-os
+The second command opens my browser to sign in with my InfoPros account.
+```
+
+#### Other assistants (tools only, no skill)
+
+- **ChatGPT:** add a connector with `https://mcp.infopros.app/mcp`.
+- **Claude without the plugin:** Settings > Connectors > Add custom connector, with the same address.
+
+### Check it works
+
+Ask: "Show me my latest reels from InfoPros OS." Claude should list them.
 
 ### Updating
 
