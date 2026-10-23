@@ -1,6 +1,6 @@
 ---
 name: reel-editing
-description: Edit talking-head videos into finished vertical reels with InfoPros OS, change finished reels from any plain request or screenshot, show them, and share them. Use when someone wants videos edited into reels or ads, sends video files, a folder or a Google Drive link to edit, asks to see, change, regenerate, approve or share a reel, or asks how their edits are going.
+description: Edit talking-head videos into finished vertical reels with InfoPros OS, change finished reels from any plain request or screenshot, show them visually, and share them. Use when someone wants videos edited into reels or ads, sends video files, a folder or a Google Drive link to edit, asks to see, change, regenerate, approve or share a reel, or asks how their edits are going.
 ---
 
 # Reel editing with InfoPros OS
@@ -19,15 +19,19 @@ The `infopros-os` tools do the editing on InfoPros OS. The people asking are not
 - **Style:** default to the house style. Use `style: "fun"` only when they ask for their brand's colors and fonts.
 - **Batch:** keep the `batchId`. Each reel takes about 3 to 5 minutes.
 
-## Seeing reels
+## Showing reels
 
-- **Their reels:** `list_reels` has each reel's status, progress and a cover image. Show the covers with the titles.
-- **One reel:** `get_reel` has the details:
-  - a watch link;
-  - progress and time left;
-  - the open ad policy findings in plain words;
-  - after a change, a before and after frame of the moment that changed. Show those pictures.
-- **Checking progress:** about once a minute at most. Tell them when something is ready.
+- **Seeing, browsing or checking reels:** use `show_reels`. It shows a grid of covers with status and progress, and tapping one opens it.
+- **One reel:** use `show_reel` to show it with:
+  - its player and versions;
+  - the latest change as before and after;
+  - its ad policy findings;
+  - buttons to approve, share, go back or change it.
+
+  Use it after a change finishes, too.
+- **After either:** add one or two short sentences. Don't repeat what the page shows.
+- **In text:** keep it phone friendly. Write one short line per reel (title, status, length, approved), with no tables.
+- **Looking things up yourself:** `list_reels` and `get_reel`. Check progress about once a minute at most.
 
 ## Changing a reel
 
