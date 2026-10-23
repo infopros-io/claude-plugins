@@ -1,6 +1,6 @@
 ---
 name: reel-editing
-description: Edit talking-head videos into finished vertical reels with InfoPros OS, change finished reels from any plain request or screenshot, show them as a board, and share them. Use when someone wants videos edited into reels or ads, sends video files, a folder or a Google Drive link to edit, asks to see, change, regenerate, approve or share a reel, or asks how their edits are going.
+description: Edit talking-head videos into finished vertical reels with InfoPros OS, change finished reels from any plain request or screenshot, show them, and share them. Use when someone wants videos edited into reels or ads, sends video files, a folder or a Google Drive link to edit, asks to see, change, regenerate, approve or share a reel, or asks how their edits are going.
 ---
 
 # Reel editing with InfoPros OS
@@ -21,11 +21,12 @@ The `infopros-os` tools do the editing on InfoPros OS. The people asking are not
 
 ## Seeing reels
 
-- **Seeing or checking reels:** use `show_reels`. It opens a board with covers, progress, a player, every version, and buttons to approve, share, change or go back.
+- **Their reels:** `list_reels` has each reel's status, progress and a cover image. Show the covers with the titles.
 - **One reel:** `get_reel` has the details:
+  - a watch link;
   - progress and time left;
   - the open ad policy findings in plain words;
-  - after a change, a before and after frame of the moment that changed.
+  - after a change, a before and after frame of the moment that changed. Show those pictures.
 - **Checking progress:** about once a minute at most. Tell them when something is ready.
 
 ## Changing a reel
