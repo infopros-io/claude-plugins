@@ -18,6 +18,7 @@ The `infopros-os` tools do the editing on InfoPros OS. The people asking are not
 - **Drive link:** `import_from_drive`.
 - **A long video they want cut into several reels:** find its highlights first with the video-highlights skill, then `make_reels`.
 - **Landscape videos:** they are framed for vertical shot by shot: the speaker followed, two people stacked, screen recordings and slides shown whole across the width. Mention it if they ask why a reel looks that way.
+- **Videos that are already edited:** only what is missing is added. A video with its own captions gets none of ours, and our graphics stay out of moments where it shows its own; it is still cut.
 - **Style:** default to the house style. Use `style: "fun"` only when they ask for their brand's colors and fonts.
 - **Batch:** keep the `batchId`. Each reel takes about 3 to 5 minutes.
 
