@@ -6,7 +6,7 @@
     {
       "name": "infopros-os",
       "source": "./plugins/infopros-os",
-      "description": "Edit talking-head videos into finished reels with InfoPros OS, change them in plain words, share them, and find the best short-form highlights in long videos.",
+      "description": "Edit talking-head videos into finished reels with InfoPros OS, change them in plain words, share them, and find the best short-form highlights in long videos and make them into reels.",
       "category": "productivity"
     }
   ]

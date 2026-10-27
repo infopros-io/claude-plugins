@@ -5,9 +5,10 @@ Plugins that connect Claude to InfoPros OS. They work only for members of the In
 ## infopros-os
 
 Edit talking-head videos into finished vertical reels, change them in plain words, and share them. Find the best
-short-form highlights in a long video, from a YouTube link or a file, each cut into a raw clip. It adds:
+short-form highlights in a long video, from a YouTube link or a file, and make them into reels, a landscape video
+framed for vertical shot by shot. It adds:
 
-- **The InfoPros OS tools** (MCP server at `https://mcp.infopros.app/mcp`): upload links, Google Drive imports, reel status, previews, changes, going back to a version, share links, and highlight searches.
+- **The InfoPros OS tools** (MCP server at `https://mcp.infopros.app/mcp`): upload links, Google Drive imports, reel status, previews, changes, going back to a version, share links, highlight searches, and reels made from highlights.
 - **A reel-editing skill and a highlights skill** that tell Claude how to use them for people who are not technical.
 
 The first time Claude uses a tool, it opens the InfoPros OS sign-in in your browser.

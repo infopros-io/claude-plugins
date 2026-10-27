@@ -1,11 +1,11 @@
 ---
 name: video-highlights
-description: Find the best short-form moments in a long video (a webinar, podcast, interview or VSL) with InfoPros OS, each cut into a raw clip. Use when someone wants highlights, clips, Shorts, Reels or TikToks pulled from a long video, sends a YouTube link or a long video file for that, or asks how a highlight search is going.
+description: Find the best short-form moments in a long video (a webinar, podcast, interview or VSL) with InfoPros OS, each cut into a raw clip, and turn the ones they want into finished vertical reels. Use when someone wants highlights, clips, Shorts, Reels or TikToks pulled from a long video, sends a YouTube link or a long video file for that, wants reels made from highlights, or asks how a highlight search is going.
 ---
 
 # Highlights with InfoPros OS
 
-The `infopros-os` tools find the moments of a long video that work on their own as Shorts, Reels or TikToks, rank them, and cut each into a raw clip, as filmed: same frame, no captions. They don't edit the clips. The people asking are not technical: never ask them for ids, settings or file paths, and speak in plain words.
+The `infopros-os` tools find the moments of a long video that work on their own as Shorts, Reels or TikToks, rank them, and cut each into a raw clip, as filmed: same frame, no captions. `make_reels` then turns the ones they want into finished reels. The people asking are not technical: never ask them for ids, settings or file paths, and speak in plain words.
 
 ## Starting a search
 
@@ -38,6 +38,8 @@ The `infopros-os` tools find the moments of a long video that work on their own 
 
 "Shorter", "longer", "more", "fewer" or "focus on the money stories" goes to `start_highlights` on the same search, with new `minSeconds` and `maxSeconds`, `count` or `lookFor`. It reuses the transcript, and the new highlights replace the old ones.
 
-## Editing a highlight into a reel
+## Making reels from highlights
 
-A highlight is a raw clip. To make it a finished reel, download its clip and edit it like any other video with the reel-editing tools (`upload_files`, then `finish_uploads`).
+When they want the highlights as finished reels or TikToks, call `make_reels` with the search. It makes every highlight into a reel by default; pass `highlights` with the ranks they pick (and `maybe` for close calls they want too). The reels are edited like any uploaded video, and a landscape video is framed for vertical shot by shot: the speaker followed, two people stacked, screen recordings and slides shown whole.
+
+Then the reel-editing skill takes over: follow the batch with `show_reels` (or `list_reels`) using the `batchId`, and use `change_reel`, `approve_reel` and `share_reel` as for any reel. Each reel takes about 3 to 5 minutes.
