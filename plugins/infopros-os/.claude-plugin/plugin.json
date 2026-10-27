@@ -1,9 +1,9 @@
 {
   "name": "infopros-os",
-  "version": "1.2.0",
-  "description": "Edit talking-head videos into finished reels with InfoPros OS, change them in plain words, and share them.",
+  "version": "1.3.0",
+  "description": "Edit talking-head videos into finished reels with InfoPros OS, change them in plain words, share them, and find the best short-form highlights in long videos.",
   "author": { "name": "InfoPros", "url": "https://github.com/infopros-io" },
   "homepage": "https://github.com/infopros-io/claude-plugins",
   "repository": "https://github.com/infopros-io/claude-plugins",
-  "keywords": ["infopros", "video", "reels", "mcp"]
+  "keywords": ["infopros", "video", "reels", "highlights", "mcp"]
 }
