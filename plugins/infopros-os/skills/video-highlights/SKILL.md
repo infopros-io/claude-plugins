@@ -9,12 +9,43 @@ The `infopros-os` tools find the moments of a long video that work on their own 
 
 ## Starting a search
 
-- **YouTube link** (public or unlisted): `find_highlights` with `youtubeUrl`. It starts at once.
+Whatever they have and wherever they ask, make sure they get their highlights. If something can't work from here, say so in a sentence and give them the next step, ready to follow.
+
+### A YouTube link
+
+YouTube refuses to hand videos to our server for now, but it hands them to their own computer.
+
+**When you can run commands on their computer** (Claude Code, the Code tab in Claude Desktop, Codex), download it there:
+
+1. **Tools:** check `yt-dlp --version`, `ffmpeg -version`, and `deno --version` (or `node --version` 22 or later, then add `--js-runtimes node` below). Install what is missing, saying what it is in a few plain words:
+   - macOS: `brew install yt-dlp ffmpeg` (it brings Deno).
+   - Windows: `winget install -e --id yt-dlp.yt-dlp` (it brings Deno and ffmpeg). Open a new terminal after.
+   - No Homebrew, or Linux: the yt-dlp release binary from github.com/yt-dlp/yt-dlp/releases, Deno's installer and a static ffmpeg, in a folder in their home folder. No admin rights needed.
+2. **Download** into a new temporary folder:
+   `yt-dlp --no-playlist -f "bv*[height<=1080][vcodec^=avc1]+ba[ext=m4a]/bv*[height<=1080]+ba/b[height<=1080]/b" --merge-output-format mp4 -o "<folder>/video.mp4" "<link>"`
+   - **Sign-in needed** (age restricted, members only, or private but shared with them): ask, then retry with `--cookies-from-browser chrome` (or their browser). It uses their own YouTube login, on their computer only.
+   - **Over 4 GB:** download again with `height<=720` in place of `height<=1080`.
+3. **Upload:** `find_highlights` with `youtubeUrl` **and** `file` (name `video.mp4`, exact size), then the PUT below, then `start_highlights`. A long video takes a while to go up from home; tell them roughly.
+4. **Clean up:** delete the download. OS keeps its own copy.
+
+If you can't install the tools, or YouTube can't be reached from where you run (a sandbox, a blocked network), do as in a chat.
+
+**In a chat** (claude.ai, the Claude app's chat or Cowork, the phone apps): `find_highlights` with `youtubeUrl` alone, and our server tries. If YouTube refuses it, `get_highlights` has a `next` saying what to tell them:
+- Say plainly that YouTube won't let our server download it and this chat can't download it either.
+- Then give the steps to run it through Claude Code on their computer: open the Claude app on a Mac or Windows computer, switch to the **Code** tab, pick any folder (Downloads is fine), and paste one message.
+- Write that message out in full for them, with the link and anything they told you about the video, e.g. `Find highlights in https://youtu.be/... It's our pricing webinar, for Acme.`
+- On a phone, tell them to do it from their computer.
+
+### A file
+
 - **A file you can read** (Claude Code, Cowork on their computer, Codex):
   1. Call `find_highlights` with the file's name and exact size in bytes. `stat -c %s` on Linux, `stat -f %z` on macOS, or `(Get-Item f).Length` in PowerShell.
   2. Upload it with `curl --fail -X PUT -H "Content-Type: <contentType>" -T "<path>" "<uploadUrl>"`.
   3. Call `start_highlights` with the `searchId`.
-- **A file attached to a chat:** use the same steps from your sandbox when it can reach `*.t3.storageapi.dev`. If the upload is blocked or the video is too large for the chat, ask them to put it on YouTube as unlisted and send the link.
+- **A file attached to a chat:** use the same steps from your sandbox when it can reach `*.t3.storageapi.dev`. If the upload is blocked or the video is too large for the chat, tell them Claude Code on their computer can send it: the Code tab steps above, with a message like `Find highlights in the video <file name> in my Downloads folder`.
+
+### Every search
+
 - **Client:** pass the client's name when the video is for one. It tunes what counts as a good fit.
 - **What they tell you about it:** pass it in their words, as `speaker`, `about`, `audience`, `lookFor` ("objections about price") or `avoid`.
 - **Lengths and count:** leave them out unless they ask. By default highlights run 30 seconds to 4 minutes, mostly 45 to 90 seconds, about one per 2 minutes of video.
@@ -24,7 +55,7 @@ The `infopros-os` tools find the moments of a long video that work on their own 
 - **How long:** about 3 to 6 minutes for an hour of video, plus the download of a long YouTube video.
 - **Checking:** call `get_highlights` about once a minute at most, and tell them where it is in a few words.
 - **Finding an earlier search:** `list_highlight_searches` turns "the webinar from last week" into a search.
-- **If it fails:** pass on the error in plain words. When YouTube refuses the download, ask them for the file instead.
+- **If it fails:** pass on the error in plain words, with what to do next. When YouTube refuses our server, follow the `next` in `get_highlights`: download it yourself if you can run commands on their computer, otherwise the Claude Code steps above.
 
 ## Showing the highlights
 

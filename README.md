@@ -13,6 +13,10 @@ framed for vertical shot by shot. It adds:
 
 The first time Claude uses a tool, it opens the InfoPros OS sign-in in your browser.
 
+**Highlights from a YouTube link:** use Claude Code or the Code tab in Claude Desktop. YouTube doesn't let our server
+download videos, so Claude downloads the video on your computer and sends it to InfoPros OS (the first time, it
+installs a free downloader). In a chat or on your phone, Claude tells you how to do it from the Code tab.
+
 ### Install
 
 Every way ends the same: the first time Claude uses an InfoPros OS tool, your browser opens the InfoPros OS sign-in.
