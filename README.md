@@ -4,7 +4,8 @@ Plugins that connect Claude to InfoPros OS. They work only for members of the In
 
 ## infopros-os
 
-Edit talking-head videos into finished vertical reels, change them in plain words, and share them. Find the best
+Edit talking-head videos into short-form vertical reels or long-form 16:9 page videos (sales, welcome or thank-you), you
+pick which, change them in plain words, and share them. Find the best
 short-form highlights in a long video, from a YouTube link or a file, and make them into reels, a landscape video
 framed for vertical shot by shot. It adds:
 

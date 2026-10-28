@@ -17,7 +17,7 @@ Talk to them in one short line at a time: what you need from them, or what's don
    - Linux: the system's packages.
 2. **Kit:** call `local_edit_kit`. If its `dir` doesn't exist yet, run `install` (`installWindows` in PowerShell).
 3. **Proxy:** run its `proxy` command (`proxyWindows` in PowerShell) with the original, writing into a new temporary folder under the original's name. It prints the proxy's `name` and `bytes`.
-4. **Upload:** `upload_files` with the proxy (same client, style and notes as any upload), PUT it, then `finish_uploads`.
+4. **Upload:** `upload_files` with the proxy (same client, format, style and notes as any upload), PUT it, then `finish_uploads`.
 5. **Wait:** `get_reel` at most once a minute until it's ready, about 3 to 5 minutes.
 6. **Render:** call `render_locally`, then run its `render` command (`renderWindows` in PowerShell) with `editUrl`, the original, and their Downloads folder (`~/Downloads/<title>.mp4`, or `$HOME\Downloads\<title>.mp4` on Windows). It takes a few minutes; the first time it also downloads a browser of about 100 MB.
 7. **Tell them:** `Done: <file>`.

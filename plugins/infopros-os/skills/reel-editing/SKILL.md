@@ -1,6 +1,6 @@
 ---
 name: reel-editing
-description: Edit talking-head videos into finished vertical reels with InfoPros OS, change finished reels from any plain request or screenshot, show them visually, and share them. Use when someone wants videos edited into reels or ads, sends video files, a folder or a Google Drive link to edit, asks to see, change, regenerate, approve or share a reel, or asks how their edits are going.
+description: Edit talking-head videos with InfoPros OS into short-form vertical reels or long-form 16:9 videos (sales, welcome or thank-you page videos), change finished reels from any plain request or screenshot, show them visually, and share them. Use when someone wants videos edited into reels or ads, sends video files, a folder or a Google Drive link to edit, asks for a page video, VSL or long-form edit, asks to see, change, regenerate, approve or share a reel, or asks how their edits are going.
 ---
 
 # Reel editing with InfoPros OS
@@ -13,6 +13,10 @@ The `infopros-os` tools do the editing on InfoPros OS. The people asking are not
 
 ## New videos
 
+**Short form or long form?** Every edit needs a `format`. Ask in one line, "Short form or long form?", unless they already said:
+- **Short form** (`format: "short"`): a vertical 9:16 reel for Meta ads and Reels. A reel or an ad is short form.
+- **Long form** (`format: "long"`): a 16:9 video of any length, edited whole, for a sales, welcome or thank-you page. Calm cuts that keep deliberate pauses, plain captions, titles, numbered cards and a button for the call to action. A page video, VSL or YouTube-style video is long form.
+
 - **Videos attached to the chat, or files you can read** (Claude Code, Cowork, Codex):
   1. Call `upload_files` with each file's name and exact size in bytes. `stat -c %s` on Linux, `stat -f %z` on macOS, or `(Get-Item f).Length` in PowerShell.
   2. Upload each with `curl --fail -X PUT -H "Content-Type: <contentType>" -T "<path>" "<uploadUrl>"`. Each edit starts by itself once its file arrives.
@@ -21,11 +25,12 @@ The `infopros-os` tools do the editing on InfoPros OS. The people asking are not
   4. **On their computer, when our server can't take the file** (too large, too slow, blocked) or they ask for it, edit it locally: the local-editing skill.
 - **Files you can't reach:** `start_upload` gives a link they open in their browser.
 - **Drive link:** `import_from_drive`.
-- **A long video they want cut into several reels:** find its highlights first with the video-highlights skill, then `make_reels`.
-- **Landscape videos:** they are framed for vertical shot by shot: the speaker followed, two people stacked, screen recordings and slides shown whole across the width. Mention it if they ask why a reel looks that way.
+- **A long video they want cut into several reels** (not edited whole): find its highlights first with the video-highlights skill, then `make_reels`.
+- **Landscape videos in short form:** they are framed for vertical shot by shot: the speaker followed, two people stacked, screen recordings and slides shown whole across the width. Mention it if they ask why a reel looks that way.
 - **Videos that are already edited:** only what is missing is added. A video with its own captions gets none of ours, and our graphics stay out of moments where it shows its own; it is still cut.
-- **Style:** default to the house style. Use `style: "fun"` only when they ask for their brand's colors and fonts.
-- **Batch:** keep the `batchId`. Each reel takes about 3 to 5 minutes.
+- **Style (short form only):** default to the house style. Use `style: "fun"` only when they ask for their brand's colors and fonts. Long form uses the client's brand when OS has one.
+- **Batch:** keep the `batchId`. Each reel takes about 3 to 5 minutes; a long-form video a little longer.
+- **Switching format:** `reedit_reel` with the other `format`, only when they ask.
 
 ## Showing reels
 
