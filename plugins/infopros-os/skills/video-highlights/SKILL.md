@@ -5,7 +5,7 @@ description: Find the best short-form moments in a long video (a webinar, podcas
 
 # Highlights with InfoPros OS
 
-The `infopros-os` tools find the moments of a long video that work on their own as Shorts, Reels or TikToks, rank them, and cut each into a raw clip, as filmed: same frame, no captions. `make_reels` then turns the ones they want into finished reels. The people asking are not technical: never ask them for ids, settings or file paths, and speak in plain words.
+The `infopros-os` tools find the moments of a long video that work on their own as Shorts, Reels or TikToks, rank them, and cut each into a raw clip, as filmed: same frame, no captions. `make_reels` then turns the ones they want into finished reels. The people asking are not technical and short on time: be very brief (a line or two, no explanations), never ask them for ids, settings or file paths, and always finish the task: on our server first, on their computer when that can't work.
 
 ## Starting a search
 
@@ -25,7 +25,7 @@ YouTube refuses to hand videos to our server for now, but it hands them to their
    `yt-dlp --no-playlist -f "bv*[height<=1080][vcodec^=avc1]+ba[ext=m4a]/bv*[height<=1080]+ba/b[height<=1080]/b" --merge-output-format mp4 -o "<folder>/video.mp4" "<link>"`
    - **Sign-in needed** (age restricted, members only, or private but shared with them): ask, then retry with `--cookies-from-browser chrome` (or their browser). It uses their own YouTube login, on their computer only.
    - **Over 4 GB:** download again with `height<=720` in place of `height<=1080`.
-3. **Upload:** `find_highlights` with `youtubeUrl` **and** `file` (name `video.mp4`, exact size), then the PUT below, then `start_highlights`. A long video takes a while to go up from home; tell them roughly.
+3. **Upload:** `find_highlights` with `youtubeUrl` **and** `file` (name `video.mp4`, exact size), then the PUT below. The search starts by itself.
 4. **Clean up:** delete the download. OS keeps its own copy.
 
 If you can't install the tools, or YouTube can't be reached from where you run (a sandbox, a blocked network), do as in a chat.
@@ -40,9 +40,12 @@ If you can't install the tools, or YouTube can't be reached from where you run (
 
 - **A file you can read** (Claude Code, Cowork on their computer, Codex):
   1. Call `find_highlights` with the file's name and exact size in bytes. `stat -c %s` on Linux, `stat -f %z` on macOS, or `(Get-Item f).Length` in PowerShell.
-  2. Upload it with `curl --fail -X PUT -H "Content-Type: <contentType>" -T "<path>" "<uploadUrl>"`.
-  3. Call `start_highlights` with the `searchId`.
-- **A file attached to a chat:** use the same steps from your sandbox when it can reach `*.t3.storageapi.dev`. If the upload is blocked or the video is too large for the chat, tell them Claude Code on their computer can send it: the Code tab steps above, with a message like `Find highlights in the video <file name> in my Downloads folder`.
+  2. Upload it with `curl --fail -X PUT -H "Content-Type: <contentType>" -T "<path>" "<uploadUrl>"`. The search starts by itself.
+- **Too large or slow to upload** (over about 2 GB, a slow line), or they want it done on their computer: upload its sound alone instead.
+  1. `ffmpeg -i <video> -vn -c:a aac -b:a 96k <name>.m4a`, then `find_highlights` with that file (and `youtubeUrl` for a YouTube video).
+  2. The search is the same; it just has no clips. Cut each one there: `ffmpeg -ss <from> -to <to> -i <video> -c:v libx264 -crf 18 -c:a aac "<rank> <title>.mp4"`, into a folder in Downloads.
+  3. **Reels from those clips:** `upload_files` with the clips, with `notes`: "A highlight cut from a longer video: keep its whole point, trim only stumbles and dead air."
+- **A file attached to a chat:** the same steps from your sandbox. **Blocked** (curl can't reach `mcp.infopros.app`): ask once, in one line: "I can't send files from this chat. Allow `mcp.infopros.app` in Settings > Capabilities and I'll retry, or do it on your computer?" On their computer is the Code tab: give the exact message to paste, e.g. `Find highlights in webinar.mp4 from my Downloads folder`.
 
 ### Every search
 
@@ -59,7 +62,7 @@ If you can't install the tools, or YouTube can't be reached from where you run (
 
 ## Showing the highlights
 
-- **One short line each:** title, where it is in the video, length, and its clip link. Keep it phone friendly, with no tables.
+- **One short line each:** title, where it is in the video, length, and its clip link. Phone friendly, no tables, nothing else unless they ask.
 - **More detail:** add the opening line or why it works only when it helps them choose.
 - **Close calls:** mention the `maybe` list as worth a look. The reviews disagreed on those.
 - **Things to check:** pass on `warnings` (an opening on "And", swearing, a long silence) and `claimsToCheck` (claims about results or income to clear before an ad boosts the clip).

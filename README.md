@@ -9,13 +9,16 @@ short-form highlights in a long video, from a YouTube link or a file, and make t
 framed for vertical shot by shot. It adds:
 
 - **The InfoPros OS tools** (MCP server at `https://mcp.infopros.app/mcp`): upload links, Google Drive imports, reel status, previews, changes, going back to a version, share links, highlight searches, and reels made from highlights.
-- **A reel-editing skill and a highlights skill** that tell Claude how to use them for people who are not technical.
+- **Skills** for reel editing, highlights, transcripts and local editing, which tell Claude how to use the tools for people who are not technical.
 
 The first time Claude uses a tool, it opens the InfoPros OS sign-in in your browser.
 
 **Highlights from a YouTube link:** use Claude Code or the Code tab in Claude Desktop. YouTube doesn't let our server
 download videos, so Claude downloads the video on your computer and sends it to InfoPros OS (the first time, it
 installs a free downloader). In a chat or on your phone, Claude tells you how to do it from the Code tab.
+
+**Videos in a chat:** the first time, Claude may ask you to allow `mcp.infopros.app` under Settings > Capabilities, so
+it can send the files you drop in. Or it can do the work on your computer, from the Code tab.
 
 ### Install
 

@@ -5,15 +5,20 @@ description: Edit talking-head videos into finished vertical reels with InfoPros
 
 # Reel editing with InfoPros OS
 
-The `infopros-os` tools do the editing on InfoPros OS. The people asking are not technical: never ask them for ids, settings or file paths, pick sensible defaults, and speak in plain words.
+The `infopros-os` tools do the editing on InfoPros OS. The people asking are not technical and short on time:
+
+- **Be very brief.** A line or two. No explanations or recaps; only what they must know or do.
+- **Never ask** for ids, settings or file paths. Pick sensible defaults.
+- **Always finish.** Run it on our server first. When that can't work, do it on their computer, and say so in one line.
 
 ## New videos
 
-- **Files you can read** (Claude Code, Cowork on their computer, Codex):
+- **Videos attached to the chat, or files you can read** (Claude Code, Cowork, Codex):
   1. Call `upload_files` with each file's name and exact size in bytes. `stat -c %s` on Linux, `stat -f %z` on macOS, or `(Get-Item f).Length` in PowerShell.
-  2. Upload each file with `curl --fail -X PUT -H "Content-Type: <contentType>" -T "<path>" "<uploadUrl>"`.
-  3. Call `finish_uploads` with every reel id.
-- **Files attached to a Claude chat:** use the same flow from your sandbox when it can reach `*.t3.storageapi.dev`. If the upload is blocked, tell them to add that domain under Settings > Capabilities, or use `start_upload` instead.
+  2. Upload each with `curl --fail -X PUT -H "Content-Type: <contentType>" -T "<path>" "<uploadUrl>"`. Each edit starts by itself once its file arrives.
+  3. **Blocked** (curl can't reach `mcp.infopros.app`, or a proxy refuses it): ask once, in one line: "I can't send files from this chat. Allow `mcp.infopros.app` in Settings > Capabilities and I'll retry, or do it on your computer?" Add `start_upload`'s link as a third way.
+     - **On their computer** is the Code tab of the Claude app (Mac or Windows). Give the exact message to paste there, e.g. `Edit talk.mp4 from my Downloads folder into a reel`.
+  4. **On their computer, when our server can't take the file** (too large, too slow, blocked) or they ask for it, edit it locally: the local-editing skill.
 - **Files you can't reach:** `start_upload` gives a link they open in their browser.
 - **Drive link:** `import_from_drive`.
 - **A long video they want cut into several reels:** find its highlights first with the video-highlights skill, then `make_reels`.
