@@ -17,11 +17,13 @@ The `infopros-os` tools do the editing on InfoPros OS. The people asking are not
 - **Short form** (`format: "short"`): a vertical 9:16 reel for Meta ads and Reels. A reel or an ad is short form.
 - **Long form** (`format: "long"`): a 16:9 video of any length, edited whole, for a sales, welcome or thank-you page. Calm cuts that keep deliberate pauses, plain captions, titles, numbered cards and a button for the call to action. A page video, VSL or YouTube-style video is long form.
 
+**Talking about long form:** the tools say "reel" for everything, but a long-form video is a **video** to the person. Never call it a reel, and never mention hooks, test variants, Meta or TikTok for it: it has none. The same tools show and change it.
+
 - **Videos attached to the chat, or files you can read** (Claude Code, Cowork, Codex):
   1. Call `upload_files` with each file's name and exact size in bytes. `stat -c %s` on Linux, `stat -f %z` on macOS, or `(Get-Item f).Length` in PowerShell.
   2. Upload each with `curl --fail -X PUT -H "Content-Type: <contentType>" -T "<path>" "<uploadUrl>"`. Each edit starts by itself once its file arrives.
   3. **Blocked** (curl can't reach `mcp.infopros.app`, or a proxy refuses it): ask once, in one line: "I can't send files from this chat. Allow `mcp.infopros.app` in Settings > Capabilities and I'll retry, or do it on your computer?" Add `start_upload`'s link as a third way.
-     - **On their computer** is the Code tab of the Claude app (Mac or Windows). Give the exact message to paste there, e.g. `Edit talk.mp4 from my Downloads folder into a reel`.
+     - **On their computer** is the Code tab of the Claude app (Mac or Windows). Give the exact message to paste there, e.g. `Edit talk.mp4 from my Downloads folder into a reel` (or `into a long-form video`).
   4. **On their computer, when our server can't take the file** (too large, too slow, blocked) or they ask for it, edit it locally: the local-editing skill.
 - **Files you can't reach:** `start_upload` gives a link they open in their browser.
 - **Drive link:** `import_from_drive`.
@@ -29,10 +31,11 @@ The `infopros-os` tools do the editing on InfoPros OS. The people asking are not
 - **Landscape videos in short form:** they are framed for vertical shot by shot: the speaker followed, two people stacked, screen recordings and slides shown whole across the width. Mention it if they ask why a reel looks that way.
 - **Videos that are already edited:** only what is missing is added. A video with its own captions gets none of ours, and our graphics stay out of moments where it shows its own; it is still cut.
 - **Style (short form only):** default to the house style. Use `style: "fun"` only when they ask for their brand's colors and fonts. Long form uses the client's brand when OS has one.
-- **Batch:** keep the `batchId`. Each reel takes about 3 to 5 minutes; a long-form video a little longer.
+- **Batch:** keep the `batchId`. Each reel takes about 3 to 5 minutes; a long-form video about 5 to 10.
+- **Phone videos with black bars** (a landscape video saved in a vertical frame): the bars are cropped off by themselves. Nothing to do.
 - **Switching format:** `reedit_reel` with the other `format`, only when they ask.
 
-## Showing reels
+## Showing reels and videos
 
 - **Seeing, browsing or checking reels:** use `show_reels`. It shows a grid of covers with status and progress, and tapping one opens it.
 - **One reel:** use `show_reel` to show it with:
@@ -43,17 +46,17 @@ The `infopros-os` tools do the editing on InfoPros OS. The people asking are not
 
   Use it after a change finishes, too.
 - **After either:** add one or two short sentences. Don't repeat what the page shows.
-- **In text:** keep it phone friendly. Write one short line per reel (title, status, length, approved), with no tables.
+- **In text:** keep it phone friendly. Write one short line per reel or video (title, status, length, approved), with no tables.
 - **Looking things up yourself:** `list_reels` and `get_reel`. Check progress about once a minute at most.
 
 ## Changing a reel
 
-Any request goes to `change_reel`, in their words: "subtitles higher", "cut the part about pricing", "make it more visual", "use red", "bigger hook".
+Any request goes to `change_reel`, in their words: "subtitles higher", "cut the part about pricing", "make it more visual", "use red", "bigger hook" (short form), "a title for the second part" (long form).
 
 1. **Find the reel:** turn "the second one" or "the funding video" into a reel with `list_reels`.
 2. **Their screenshot:** look at it and say in the request what it shows ("move the captions to about 30% from the top, where they circled"). Attach it when the picture says more than words.
 3. **Where:** pass `atSeconds` when they mean a moment.
-4. **"Regenerate", "redo" or "try again":** this is a `change_reel` saying what they didn't like, or "give it a new hook". Use `reedit_reel` only when they clearly want to start over from scratch.
+4. **"Regenerate", "redo" or "try again":** this is a `change_reel` saying what they didn't like, or, for a reel, "give it a new hook". Use `reedit_reel` only when they clearly want to start over from scratch.
 5. **Many reels:** `change_reels` applies one request to several at once ("captions bigger on all of them").
 6. **Afterwards:** a change takes 1 to 3 minutes and becomes a new version. Check `get_reel` and show the before and after. If the ad policy got worse, say so and offer `undo_change`, or a change that fixes the policy findings.
 

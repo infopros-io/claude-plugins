@@ -44,7 +44,7 @@ If you can't install the tools, or YouTube can't be reached from where you run (
 - **Too large or slow to upload** (over about 2 GB, a slow line), or they want it done on their computer: upload its sound alone instead.
   1. `ffmpeg -i <video> -vn -c:a aac -b:a 96k <name>.m4a`, then `find_highlights` with that file (and `youtubeUrl` for a YouTube video).
   2. The search is the same; it just has no clips. Cut each one there: `ffmpeg -ss <from> -to <to> -i <video> -c:v libx264 -crf 18 -c:a aac "<rank> <title>.mp4"`, into a folder in Downloads.
-  3. **Reels from those clips:** `upload_files` with the clips, with `notes`: "A highlight cut from a longer video: keep its whole point, trim only stumbles and dead air."
+  3. **Reels from those clips:** `upload_files` with the clips, `format: "short"` (highlights are always reels), and `notes`: "A highlight cut from a longer video: keep its whole point, trim only stumbles and dead air."
 - **A file attached to a chat:** the same steps from your sandbox. **Blocked** (curl can't reach `mcp.infopros.app`): ask once, in one line: "I can't send files from this chat. Allow `mcp.infopros.app` in Settings > Capabilities and I'll retry, or do it on your computer?" On their computer is the Code tab: give the exact message to paste, e.g. `Find highlights in webinar.mp4 from my Downloads folder`.
 
 ### Every search
