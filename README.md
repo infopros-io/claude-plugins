@@ -25,6 +25,9 @@ it can send the files you drop in. Or it can do the work on your computer, from 
 Every way ends the same: the first time Claude uses an InfoPros OS tool, your browser opens the InfoPros OS sign-in.
 Sign in with your InfoPros account, and you are connected.
 
+**Then say "set me up".** Claude checks the sign-in, the one domain chats need (`mcp.infopros.app`) and, in
+Claude Code or the Code tab, installs the free tools for YouTube videos and local editing.
+
 #### Claude Desktop (chat and Cowork): a few clicks
 
 A prompt can't install plugins here, because Claude can't change its own app settings. It takes four clicks:
