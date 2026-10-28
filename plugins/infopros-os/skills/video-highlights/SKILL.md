@@ -76,4 +76,4 @@ If you can't install the tools, or YouTube can't be reached from where you run (
 
 When they want the highlights as finished reels or TikToks, call `make_reels` with the search. It makes every highlight into a reel by default; pass `highlights` with the ranks they pick (and `maybe` for close calls they want too). The reels are edited like any uploaded video, and a landscape video is framed for vertical shot by shot: the speaker followed, two people stacked, screen recordings and slides shown whole.
 
-Then the reel-editing skill takes over: follow the batch with `show_reels` (or `list_reels`) using the `batchId`, and use `change_reel`, `approve_reel` and `share_reel` as for any reel. Each reel takes about 3 to 5 minutes.
+Then the video-editing skill takes over: follow the batch with `show_videos` (or `list_videos`) using the `batchId`, and use `change_video`, `approve_video` and `share_video` as for any reel. Each reel takes about 3 to 5 minutes.

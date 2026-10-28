@@ -10,7 +10,7 @@ short-form highlights in a long video, from a YouTube link or a file, and make t
 framed for vertical shot by shot. It adds:
 
 - **The InfoPros OS tools** (MCP server at `https://mcp.infopros.app/mcp`): uploads (from the chat, your computer, a browser link or Google Drive), status, an in-chat page to watch and change reels and videos, previews, changes, going back to a version, share links, highlight searches, reels made from highlights, transcripts and local editing.
-- **Skills** for setup (say "set me up"), editing, highlights, transcripts and local editing, which tell Claude how to use the tools for people who are not technical.
+- **Skills** for setup (say "set me up"), video editing (short and long form), highlights, transcripts and local editing, which tell Claude how to use the tools for people who are not technical.
 
 The first time Claude uses a tool, it opens the InfoPros OS sign-in in your browser.
 
