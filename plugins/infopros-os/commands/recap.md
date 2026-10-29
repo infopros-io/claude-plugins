@@ -22,5 +22,5 @@ Request: $ARGUMENTS
 - VIP purchases: N
 - vs last 3: one line with the biggest moves, like "show rate down 5 pts, cost per registrant down 8%"
 
-Leave out a line whose number is missing. Add one line with the Slack recap's numbers only if they differ, and the
-report link last.
+Leave out a line whose number is missing. When the tool withholds a number with a warning, write that line as
+"⚠️ <number>: sources disagree, check before using" with no value. The report link last.

@@ -1,6 +1,6 @@
 {
   "name": "infopros-os",
-  "version": "1.10.0",
+  "version": "1.10.1",
   "description": "Ask about InfoPros data (webinar recaps, ad numbers and changes, creatives, WebinarJam, booked calls and cash, what was said in Slack or on calls) with short answers and commands like /recap, /morning and /why. Edit talking-head videos with InfoPros OS into short-form reels or long-form 16:9 page videos, find highlights in long videos, transcribe, and edit on your own computer when a video can't go up.",
   "author": {
     "name": "InfoPros"
