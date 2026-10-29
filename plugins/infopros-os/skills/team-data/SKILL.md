@@ -1,6 +1,6 @@
 ---
 name: team-data
-description: Answer questions about InfoPros data from the infopros-os tools, briefly. Covers webinar numbers and recaps, Meta ad numbers and changes, creatives, WebinarJam, booked calls and cash, launches, and what was said in Slack or on calls. Use for any question about a client's numbers, webinars, ads, results or team decisions, such as "how did Tizzy's webby do", "CPL for Danny last week", "why did KM's cost go up", "who paused the ads", "find the message where", or "how many bookings last night".
+description: Answer questions about InfoPros data from the infopros-os tools, briefly. Covers webinar numbers and recaps, Meta ad numbers and changes, creatives, WebinarJam, booked calls and cash, launches, and what was said in Slack or on calls. Use for any question about a client's numbers, webinars, ads, results or team decisions, such as "how did their webby do", "CPL for this client last week", "why did the cost go up", "who paused the ads", "find the message where", or "how many bookings last night".
 ---
 
 # Team data
@@ -24,7 +24,7 @@ short: they ask for more when they want it.
 - **Nothing found?** One line saying where you looked, and the closest thing you did find.
 
 Good:
-> **Tizzy, Wed Oct 28:** 266 registrants, 31.6% show rate (84 live), $26.11 per registrant.
+> **Acme, Wed Oct 28:** 266 registrants, 31.6% show rate (84 live), $26.11 per registrant.
 > - Show rate down from 36% average over the last 3.
 > - [Recap in Slack](link)
 
@@ -33,10 +33,9 @@ Too long: an opening line about checking, the method, every metric, then a summa
 ## Names
 
 Pass names as people say them; the tools resolve nicknames and typos. When a tool says it guessed, confirm in a few
-words ("Tizzy = Elaine Essien?"). When someone tells you what a nickname means, save it with `remember_alias`.
+words ("Acme = Acme Coaching?"). When someone tells you what a nickname means, save it with `remember_alias`.
 
-Nicknames in use: Tizzy = Elaine Essien, KM = King Method, Miss = Miss Margharita, Tranchi = Traunchi AI,
-Streamline = StreamlineTTS, Danny = Danny Cavallaro. A "webby" is a webinar, "regs" are registrants, "VIP" is the
+The team's nicknames for clients are saved in OS, so the tools know them. A "webby" is a webinar, "regs" are registrants, "VIP" is the
 paid upsell after registering, "DQ" is disqualified, "CPL" is cost per registration.
 
 ## When something isn't named

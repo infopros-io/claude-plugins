@@ -4,13 +4,31 @@ Plugins that connect Claude to InfoPros OS. They work only for members of the In
 
 ## infopros-os
 
-Edit talking-head videos into short-form vertical reels or long-form 16:9 page videos (sales, welcome or thank-you), you
-pick which, change them in plain words, and share them. Find the best
-short-form highlights in a long video, from a YouTube link or a file, and make them into reels, a landscape video
-framed for vertical shot by shot. It adds:
+Ask about InfoPros data in plain words, and edit videos. It adds:
 
-- **The InfoPros OS tools** (MCP server at `https://mcp.infopros.app/mcp`): uploads (from the chat, your computer, a browser link or Google Drive), status, an in-chat page to watch and change reels and videos, previews, changes, going back to a version, share links, highlight searches, reels made from highlights, transcripts and local editing.
-- **Skills** for setup (say "set me up"), video editing (short and long form), highlights, transcripts and local editing, which tell Claude how to use the tools for people who are not technical.
+- **Answers about client data,** short and with links to the source:
+  - webinar numbers and recaps, compared with the last webinars
+  - WebinarJam: registrants, show rate, who stayed to the offer, watch time, replays, whether a lead attended
+  - Meta ads: spend, cost per registration and the rest for any period, and who changed what (budgets, pauses,
+    targeting) and when
+  - winning and tired creatives, and the hooks that work
+  - booked calls, closes and cash posted in Slack or entered on the results form
+  - launches and budgets, and what was said or decided in Slack, on calls or in the SOPs
+- **Commands:**
+  - `/recap`: a webinar recap, like the team's Slack recap posts
+  - `/morning`: last night's webinars, bookings, cost jumps, ad changes and today's webinars
+  - `/why`: why a cost or show rate moved, and what to fix first
+  - `/client`: a client's status at a glance
+  - `/winners`: a client's best and tired creatives
+  - `/results-form`: a results form link for a client's webinar, which you share yourself
+
+  Without a client or webinar named, the command lets you pick from the most recent ones.
+- **Video editing:** talking-head videos into short-form vertical reels or long-form 16:9 page videos (sales,
+  welcome or thank-you), you pick which, changed in plain words and shared. Highlights of a long video, from a
+  YouTube link or a file, made into reels framed for vertical shot by shot. Transcripts, and local editing on your
+  own computer.
+- **The InfoPros OS tools** (MCP server at `https://mcp.infopros.app/mcp`) and **skills** that tell Claude how to
+  use them for people who are not technical, and to keep answers brief.
 
 The first time Claude uses a tool, it opens the InfoPros OS sign-in in your browser.
 
@@ -63,7 +81,7 @@ Restart Claude Code, type `/mcp`, pick `infopros-os` and sign in.
 
 #### Codex: paste a prompt
 
-Codex gets the tools without the skill. Paste this into Codex:
+Codex gets the tools and short-answer instructions, without the skills and commands. Paste this into Codex:
 
 ```text
 Connect me to InfoPros OS. Run:
@@ -79,7 +97,8 @@ The second command opens my browser to sign in with my InfoPros account.
 
 ### Check it works
 
-Ask: "Show me my latest reels and videos from InfoPros OS." Claude should list them.
+Ask: "How did our last webinar do?" or type `/recap` and pick a client. For videos, ask: "Show me my latest reels and videos from
+InfoPros OS."
 
 ### Updating
 
