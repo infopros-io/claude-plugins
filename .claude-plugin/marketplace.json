@@ -1,12 +1,17 @@
 {
   "name": "infopros",
-  "owner": { "name": "InfoPros", "url": "https://github.com/infopros-io" },
-  "metadata": { "description": "InfoPros OS tools for the InfoPros team's own assistants." },
+  "owner": {
+    "name": "InfoPros",
+    "url": "https://github.com/infopros-io"
+  },
+  "metadata": {
+    "description": "InfoPros OS tools for the InfoPros team's own assistants."
+  },
   "plugins": [
     {
       "name": "infopros-os",
       "source": "./plugins/infopros-os",
-      "description": "Edit talking-head videos with InfoPros OS into short-form reels or long-form 16:9 page videos, change them in plain words, share them, and find the best short-form highlights in long videos and make them into reels. Transcribe videos, and edit on your own computer when a video can't go up.",
+      "description": "Ask about InfoPros data (webinar recaps, ad numbers and changes, creatives, WebinarJam, booked calls and cash, what was said in Slack or on calls) with short answers and commands like /recap, /morning and /why. Edit talking-head videos with InfoPros OS into short-form reels or long-form 16:9 page videos, find highlights in long videos, transcribe, and edit on your own computer when a video can't go up.",
       "category": "productivity"
     }
   ]

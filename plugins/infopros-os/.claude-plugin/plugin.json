@@ -1,9 +1,8 @@
 {
   "name": "infopros-os",
-  "version": "1.9.0",
-  "description": "Edit talking-head videos with InfoPros OS into short-form reels or long-form 16:9 page videos, change them in plain words, share them, and find the best short-form highlights in long videos and make them into reels. Transcribe videos, and edit on your own computer when a video can't go up.",
-  "author": { "name": "InfoPros", "url": "https://github.com/infopros-io" },
-  "homepage": "https://github.com/infopros-io/claude-plugins",
-  "repository": "https://github.com/infopros-io/claude-plugins",
-  "keywords": ["infopros", "video", "reels", "highlights", "mcp"]
+  "version": "1.10.0",
+  "description": "Ask about InfoPros data (webinar recaps, ad numbers and changes, creatives, WebinarJam, booked calls and cash, what was said in Slack or on calls) with short answers and commands like /recap, /morning and /why. Edit talking-head videos with InfoPros OS into short-form reels or long-form 16:9 page videos, find highlights in long videos, transcribe, and edit on your own computer when a video can't go up.",
+  "author": {
+    "name": "InfoPros"
+  }
 }
