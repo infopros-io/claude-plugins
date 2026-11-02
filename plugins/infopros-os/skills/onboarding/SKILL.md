@@ -18,6 +18,10 @@ Call `list_clients`. If it answers, they are signed in. If the `infopros-os` too
 - **Claude Code or the Code tab:** tell them to type `/mcp`, pick `infopros-os` and sign in. If there is no `infopros-os`, run `claude plugin marketplace add infopros-io/claude-plugins` and `claude plugin install infopros-os@infopros`, then ask them to restart and do `/mcp`.
 - **Codex:** run `codex mcp login infopros-os`.
 
+Meta's own ads tools (`meta-ads`) need their own sign-in, only for people who build ads. If they do and the
+`meta-ads` tools ask for it, same place: Connect (Claude app) or `/mcp` > `meta-ads` (Claude Code), signing in with
+the Facebook account that has the clients' ad accounts. Allow every permission it asks for, including Pages.
+
 ## 2. In a chat (claude.ai, the Claude app's chat or Cowork)
 
 Check the domain the files go through: `curl -sS -m 10 -o /dev/null -w "%{http_code}" https://mcp.infopros.app/health`. A `200` means it's fine.
