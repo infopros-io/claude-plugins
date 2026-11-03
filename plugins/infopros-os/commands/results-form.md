@@ -1,5 +1,5 @@
 ---
-description: Make the results form link for a client's webinar (calls booked, deals closed, cash) to share yourself
+description: Make the results form link for a client's webinar (the same results as the report) to share yourself
 argument-hint: "[client] [session]"
 ---
 

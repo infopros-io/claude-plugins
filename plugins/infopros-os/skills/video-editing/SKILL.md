@@ -38,7 +38,7 @@ Call a short-form one a reel and a long-form one a video. The same tools do both
 
 ### Short form only
 
-- **Style:** default to the house style. Use `style: "fun"` only when they ask for their brand's colors and fonts.
+- **Style:** default to the house style. Use `style: "fun"` only when they ask for their brand's colors and fonts as OS has them; for any other look, use `look`.
 - **Hook and test variants:** a reel opens on a hook; `testVariants` adds other openings and a short cut to test.
 - **Landscape videos** are framed for vertical shot by shot: the speaker followed, two people stacked, screen recordings and slides shown whole. Mention it if they ask why a reel looks that way.
 
@@ -46,6 +46,24 @@ Call a short-form one a reel and a long-form one a video. The same tools do both
 
 - Calm cuts that keep deliberate pauses, plain captions, titles, numbered cards and a button for the call to action.
 - It wears the client's design system when OS has one. It has no hook, no test variants and no Meta or TikTok versions; never mention them.
+
+## A look they ask for
+
+When they want videos in a certain style, pass `look` (on `upload_files`, `start_upload`, `import_from_drive`,
+`make_reels`, `reedit_video`, `change_video` or `change_videos`). OS reads it once into fonts, colors, caption style
+and motion and keeps it with the videos, so new edits and edits again keep it. Nothing is saved as the client's brand.
+
+- **Their words:** `request`, as they said it ("bold yellow captions in capitals, calm, few graphics").
+- **A font:** `fonts`, a Google Fonts name or a link to a font file; say in `request` if it's for captions or titles.
+- **Colors:** `colors`, and what each is for in `request`.
+- **A website:** `website`; its fonts and colors are read from the page.
+- **A reel:** `reel` with a video id in OS, a Google Drive file link or a direct video link. For Instagram, TikTok or
+  YouTube, download it on their computer and send 4 to 6 stills as `screenshots` (in a chat, ask them for
+  screenshots of it).
+- **Screenshots** of a look they like: `screenshots`.
+
+Say back the `look` line the tool returns, and `lookCannot` if there is one (music, stickers). For finished videos
+it's a change: a new version of each.
 
 ## Showing videos
 
