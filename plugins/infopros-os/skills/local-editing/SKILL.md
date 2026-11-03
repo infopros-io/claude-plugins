@@ -19,7 +19,10 @@ Talk to them in one short line at a time: what you need from them, or what's don
 3. **Proxy:** run its `proxy` command (`proxyWindows` in PowerShell) with the original, writing into a new temporary folder under the original's name. It prints the proxy's `name` and `bytes`.
 4. **Upload:** `upload_files` with the proxy (same client, format, style and notes as any upload), then PUT it. Its edit starts by itself once it arrives.
 5. **Wait:** `get_video` at most once a minute until it's ready, about 3 to 5 minutes.
-6. **Render:** call `render_locally`, then run its `render` command (`renderWindows` in PowerShell) with `editUrl`, the original, and their Downloads folder (`~/Downloads/<title>.mp4`, or `$HOME\Downloads\<title>.mp4` on Windows). It takes a few minutes; the first time it also downloads a browser of about 100 MB.
+6. **Render:** call `render_locally`.
+   - **Cutout:** when it answers `needsCutout: true` (the reel shows something behind the speaker or stands them on a page), run its `setupCutout` (`setupCutoutWindows` in PowerShell) once on this computer, skipped when an earlier render here printed `cutout: made`. It needs Python 3.10 or later; install it after one line asking (macOS `brew install python`, Windows `winget install -e --id Python.Python.3.13` then a new terminal, Linux the system's `python3` and `python3-venv`).
+   - Run its `render` command (`renderWindows` in PowerShell) with `editUrl`, the original, and their Downloads folder (`~/Downloads/<title>.mp4`, or `$HOME\Downloads\<title>.mp4` on Windows). It takes a few minutes; the first time it also downloads a browser of about 100 MB.
+   - When render prints `cutout: missing`, run `setupCutout` and render again.
 7. **Tell them:** `Done: <file>`.
 8. **Into OS:** before `share_video` or `approve_video`, or when they want it in OS, call `attach_local_render`, PUT the file, then `finish_local_render` with the `bytes` and `sha256` that render printed. Until then OS holds the proxy's softer render.
 
