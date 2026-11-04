@@ -38,7 +38,7 @@ Call a short-form one a reel and a long-form one a video. The same tools do both
 
 ### Short form only
 
-- **Style:** default to the house style. Use `style: "fun"` only when they ask for their brand's colors and fonts as OS has them; for any other look, use `look`.
+- **Style:** leave `style` out for the house default, cinematic (the client's brand with a brisk pace, sound effects, and proof cards, graphs, tier lists or a word around the speaker). Use `style: "fun"` when they want it calmer, `style: "stacked"` when they ask for the Dany Iles style or the studio talking-head reel look (two-tier captions with big key phrases in a new dress each line, the hook in a white box, no effects), `style: "simple"` for the footage's own colors, and `look` for any other look.
 - **Hook and test variants:** a reel opens on a hook; `testVariants` adds other openings and a short cut to test.
 - **Landscape videos** are framed for vertical shot by shot: the speaker followed, two people stacked, screen recordings and slides shown whole. Mention it if they ask why a reel looks that way.
 

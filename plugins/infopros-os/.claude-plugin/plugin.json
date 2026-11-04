@@ -1,6 +1,6 @@
 {
   "name": "infopros-os",
-  "version": "1.14.0",
+  "version": "1.15.0",
   "description": "InfoPros OS for the InfoPros team. Ask about client data in plain words and get short answers with links: webinar numbers and recaps, WebinarJam attendance, Meta ad numbers, who changed what in the ads, winning creatives, booked calls and cash, launches, and what was said in Slack, on calls or in the SOPs. Uploads ad creatives from Drive or your computer and builds Meta campaigns, ad sets and ads, named in the team's convention and always paused, with Meta's own ads tools included. Commands: /recap, /morning, /why, /client, /winners and /results-form. Also edits talking-head videos into short-form reels or long-form 16:9 page videos, in any look you ask for (fonts, colors, a website or a reel to copy), finds highlights in long videos, transcribes, and edits on your own computer when a video can't go up.",
   "author": {
     "name": "InfoPros"
