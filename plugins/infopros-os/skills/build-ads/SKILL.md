@@ -1,6 +1,6 @@
 ---
 name: build-ads
-description: Upload ad creatives to a client's Meta ad account and build campaigns, ad sets and ads with Meta's own ads tools (meta-ads) and the infopros-os tools, named in the team's convention and always paused. Use when someone wants to upload creatives (Drive links or files), launch a campaign for a webinar, add new ads to an ad set, or copy last launch's campaign for the next date.
+description: Upload ad creatives to a client's Meta ad account and build campaigns, ad sets and ads with Meta's own ads tools (meta-ads) and the infopros-os tools, named in the team's convention and always paused. Use when someone wants to upload creatives (Drive links or files), launch a campaign for a webinar, add new ads to an ad set, duplicate an ad and change its media, text or enhancements, or copy last launch's campaign for the next date.
 ---
 
 # Build ads
@@ -14,6 +14,12 @@ Everything is created paused. Nothing is created until the person has seen the p
   as the person's own Facebook login. If they aren't connected, help them sign in (onboarding skill).
 - **Ads (images and videos):** `plan_ads` with `add_ads` into the ad set, then `create_planned_ads`. It names the ads,
   adds the UTM tags and finds the page and Instagram account.
+- **Duplicating an ad and editing the copies:** `plan_ads` with `duplicate_ads`, then `create_planned_ads`. One
+  entry in `copies` per new ad: new `media` (an upload) in place of the copied ad's, and only what else changes (text,
+  headline, link, button, name). The page, URL tags, tracking and ad set stay as the copied ad has them.
+  Enhancements default to the team's way (relevant comments, enhance CTA, brightness and contrast on; music, AI image
+  and video generation, translation and the rest off). Change single ones with `enhancements.on` / `off` only when
+  asked. The copied ad itself is never changed.
 - **Copying last launch's campaign:** `plan_ads` with `duplicate_campaign`, then `create_planned_ads`.
 - **Numbers and changes:** infopros-os (`ad_numbers`, `creative_performance`, `ad_changes`), as in team-data.
 
@@ -28,8 +34,11 @@ Everything is created paused. Nothing is created until the person has seen the p
      below, broad with Advantage+ audience, countries, ages, optimization goal, the pixel the account's latest ad sets
      use, budget), then the ads: media, primary text, headline, link, button.
    - New ads into a running ad set: the ad set and the ads.
+   - Copies of one ad: the ad to copy and, per copy, the new media and anything else that changes. A batch of
+     uploads becomes one copy each, named after its media.
    - Next launch: last launch's campaign and the new date.
-4. **Confirm.** Show the plan in a few lines: campaign name and budget, ad set names, ad names, link. Ask "Create
+4. **Confirm.** Show the plan in a few lines: campaign name and budget, ad set names, ad names, link (for copies:
+   which ad, how many copies, what changes, enhancements off). Ask "Create
    it, paused?" and wait for a yes. One yes covers the whole plan.
 5. **Create.** For a new campaign: the campaign and ad sets with Meta's tools, then the ads with `plan_ads`
    (`add_ads`, once per ad set) and `create_planned_ads`, no new question. Otherwise `plan_ads` and
