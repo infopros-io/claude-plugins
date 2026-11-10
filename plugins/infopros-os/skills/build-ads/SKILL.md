@@ -1,11 +1,12 @@
 ---
 name: build-ads
-description: Upload ad creatives to a client's Meta ad account and build campaigns, ad sets and ads with Meta's own ads tools (meta-ads) and the infopros-os tools, named in the team's convention and always paused. Use when someone wants to upload creatives (Drive links or files), launch a campaign for a webinar, add new ads to an ad set, duplicate an ad and change its media, text or enhancements, or copy last launch's campaign for the next date.
+description: Upload ad creatives to a client's Meta ad account and build campaigns, ad sets and ads with Meta's own ads tools (meta-ads) and the infopros-os tools, named in the team's convention and always paused. Use when someone wants to upload creatives (Drive links or files), launch a campaign for a webinar, add new ads to an ad set, duplicate an ad and change its media, text or enhancements, or copy last launch's campaign for the next date, or check and publish (turn on) paused ads.
 ---
 
 # Build ads
 
-Everything is created paused. Nothing is created until the person has seen the plan and said yes.
+Everything is created paused. Nothing is created until the person has seen the plan and said yes. Nothing is turned
+on until they have seen the check and said yes to turning those ads on.
 
 ## Which tools
 
@@ -21,6 +22,9 @@ Everything is created paused. Nothing is created until the person has seen the p
   and video generation, translation and the rest off). Change single ones with `enhancements.on` / `off` only when
   asked. The copied ad itself is never changed.
 - **Copying last launch's campaign:** `plan_ads` with `duplicate_campaign`, then `create_planned_ads`.
+- **Publishing (turning ads on):** `plan_publish` (ads by name or number, an ad set, a campaign, or the ads a plan
+  just made; `numbers.to` for "up to ad 20"), then `publish_planned_ads`. Only ads are turned on, never ad sets or
+  campaigns.
 - **Numbers and changes:** infopros-os (`ad_numbers`, `creative_performance`, `ad_changes`), as in team-data.
 
 ## Steps
@@ -45,6 +49,11 @@ Everything is created paused. Nothing is created until the person has seen the p
    `create_planned_ads`. Give the Ads Manager link and say it's paused. If something is refused halfway, say what was
    already created.
 
+6. **Publish, when asked.** `plan_publish`, then show the ads and every warning from the check (different links,
+   buttons or URL tags, AI enhancements on, rejected ads, ad set or campaign off) in a few lines. Ask "Turn these N
+   ads on now? They start spending." and wait for a yes to that list; the yes to creating them doesn't count. Then
+   `publish_planned_ads` and give the link.
+
 ## Names
 
 Every name is built from parts joined by ` | `. infopros-os builds ad names and copied campaign names itself; build
@@ -67,5 +76,6 @@ Short: what will be created, then the question. No em dashes or middle dots. Nev
 ## Never
 
 - Never create anything without a yes to that exact plan.
-- Never turn anything on (`ads_activate_entity`), change or pause a live campaign, ad set or ad
-  (`ads_update_entity`), or delete or change audiences. The person does that in Ads Manager.
+- Never turn ads on without `plan_publish` and a yes to its list. Never turn on ad sets or campaigns
+  (`ads_activate_entity`), change or pause a live campaign, ad set or ad (`ads_update_entity`), or delete or change
+  audiences. The person does that in Ads Manager.
