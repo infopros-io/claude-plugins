@@ -67,7 +67,8 @@ line with the options numbered.
 | Who changed what in the ads, and when | `ad_changes` (`withResults` for cost before and after) |
 | Bookings, closes, cash | `results` |
 | Webinars and launches coming up, budgets | `launches` |
-| What someone said or decided, find a message | `search`, then `open` |
+| What someone said, decided or posted, how we do something | `research` (one call returns the sources whole) |
+| List or browse matches, read further into one | `search`, then `open` |
 | Why a number moved | `webinar_numbers`, then `ad_numbers` by day, `ad_changes`, `creative_performance` fatigue, `webinarjam`, `search` |
 
 ## Good or bad
