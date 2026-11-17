@@ -41,7 +41,7 @@ If it fails, send exactly this (one message):
      - **macOS:** `brew install yt-dlp ffmpeg node`. With no Homebrew, ask them to paste the install line from brew.sh into Terminal (it asks for their Mac password), then continue.
      - **Windows:** `winget install -e --id yt-dlp.yt-dlp` (brings ffmpeg and Deno) and `winget install -e --id OpenJS.NodeJS.LTS`. Open a new terminal after.
      - **Linux:** the system's packages, or the yt-dlp release binary.
-3. **Local editing kit:** the kit comes with the local-editing skill, in its `kit` folder. Call `local_edit_kit`; if `kit/version.json` there isn't its `kitVersion`, say in one line to update the InfoPros plugin. If its `dir` doesn't exist yet, run its `install` (`installWindows` in PowerShell, `<local-editing skill folder>` replaced by that skill's folder) so the first local edit starts at once.
+3. **Local editing kit:** the kit comes with the local-editing skill, in its `kit` folder. Call `local_edit_kit`; if `kit/version.json` there isn't its `kitVersion`, say in one line to update the InfoPros plugin. If its `dir` doesn't exist yet, run its `install` (`installWindows` in PowerShell, `<local-editing skill folder>` replaced by that skill's folder) so the first local edit starts at once. With a sandbox on (Claude Code's, or Codex), run it outside the sandbox: it writes to `~/.infopros` and downloads from npm.
 
 ## 4. On a phone
 

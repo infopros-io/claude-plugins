@@ -9,6 +9,8 @@ Remote first: upload the original with `upload_files` whenever you can. Use this
 
 Talk to them in one short line at a time: what you need from them, or what's done. No explanations.
 
+**Sandboxed assistants** (Claude Code with its sandbox on, Codex): the kit's commands write outside the project (`~/.infopros`, `~/.cache/video-ad-cutout`, their Downloads folder) and download what they need (Remotion from npm, a headless browser of about 100 MB, and for the cutout Python packages and the matting model from GitHub), and render serves the original to that browser on a local address. Run `install`, `setupCutout` and `render` outside the sandbox from the start (in Claude Code, the command's sandbox override, which asks them first; in Codex, ask for the permission it needs). `proxy` only reads the original and writes the proxy: give it a folder inside the project, and run it outside the sandbox too if it is still blocked.
+
 ## Steps
 
 1. **Tools:** check `node --version` (20 or later) and `ffmpeg -version`. Install what's missing, after one line asking:
