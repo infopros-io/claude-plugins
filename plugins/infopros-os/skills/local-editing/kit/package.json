@@ -1,0 +1,9 @@
+{
+  "name": "infopros-render-kit",
+  "private": true,
+  "type": "module",
+  "description": "Renders InfoPros OS reels and videos on this computer: node render.mjs proxy|setup-cutout|render (docs/local-editing.md).",
+  "dependencies": {
+    "@remotion/renderer": "4.0.535"
+  }
+}
