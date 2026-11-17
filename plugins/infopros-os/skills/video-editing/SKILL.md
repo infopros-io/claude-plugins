@@ -44,7 +44,8 @@ Call a short-form one a reel and a long-form one a video. The same tools do both
 
 ### Long form only
 
-- Calm cuts that keep deliberate pauses, plain captions, titles, numbered cards and a button for the call to action.
+- Calm cuts that keep deliberate pauses, plain captions, and designed pages: a heading, a list, a number that counts up, a quote, cards, a comparison or steps, each on the words that say it. The speaker moves into a window or half of the frame beside a page, or stands on it cut out of their background; captions step aside while a page shows. The call to action is a page too; there is no button.
+- Changes name a page's look in plain words ("put me on the left", "make it a split", "on a light page", "in the serif"): `change_video` handles them.
 - It wears the client's design system when OS has one. It has no hook, no test variants and no Meta or TikTok versions; never mention them.
 
 ## A look they ask for
