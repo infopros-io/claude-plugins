@@ -142,8 +142,8 @@ const TRANSITION_KINDS = (/* unused pure expression or super */ null && (["zoom"
 const OPENERS = (/* unused pure expression or super */ null && (["blur", "zoom-out"]));
 const TEXT_ICONS = (/* unused pure expression or super */ null && (["none", "live", "no", "yes", "money", "free", "link", "people", "location", "calendar", "clock", "down"]));
 const TRAILING_ICONS = ["calendar", "clock", "down"];
-const BEAT_KINDS = (/* unused pure expression or super */ null && (["notify", "pill", "card", "bubble", "comment", "list", "moment", "compare", "chart", "phone", "image", "title", "point", "stat", "shoulders", "graph", "tier", "word", "screen", "split", "page"]));
-const SIMPLE_BEAT_KINDS = (/* unused pure expression or super */ null && (["notify", "pill", "card", "bubble", "comment", "stat"]));
+const BEAT_KINDS = (/* unused pure expression or super */ null && (["notify", "pill", "card", "bubble", "comment", "list", "moment", "compare", "chart", "phone", "image", "title", "point", "stat", "shoulders", "graph", "tier", "word", "screen", "split", "page", "placed"]));
+const SIMPLE_BEAT_KINDS = (/* unused pure expression or super */ null && (["notify", "pill", "card", "bubble", "comment", "stat", "placed"]));
 const RETIRED_BEAT_KINDS = (/* unused pure expression or super */ null && (["pill", "card", "bubble"]));
 const LONG_BEAT_KINDS = (/* unused pure expression or super */ null && (["title", "point", "page"]));
 const LONG_PLANNED_KINDS = (/* unused pure expression or super */ null && (["page"]));
@@ -899,6 +899,7 @@ const APPS = {
 const APP_IDS = Object.keys(APPS);
 const MIN_HOLD = 2 * cuts_FPS;
 const MAX_HOLD = 8 * cuts_FPS;
+const PLACED_HOLD = 14 * cuts_FPS;
 const MAX_SCENE_HOLD = 12 * cuts_FPS;
 const LINE_STAGGER = Math.round(0.35 * cuts_FPS);
 function pageHold(p) {
@@ -993,7 +994,7 @@ function placeBeats(planned, words, totalFrames, room = {}) {
     if (fromFrame > lastFrame - (p.kind === "page" && holdsToEnd ? beats_FPS : MIN_HOLD)) continue;
     const until = holdsToEnd ? void 0 : words.find((w) => w.index >= p.untilWordIndex);
     const end = until ? frameAt(until.startMs) - LEAVE_EARLY : fromFrame + MIN_HOLD;
-    const maxHold = p.kind === "page" ? pageHold(p) : beats_EFFECT_HOLD[p.kind] ?? (isFullFrame(p.kind) ? MAX_SCENE_HOLD : MAX_HOLD);
+    const maxHold = p.kind === "placed" ? PLACED_HOLD : p.kind === "page" ? pageHold(p) : beats_EFFECT_HOLD[p.kind] ?? (isFullFrame(p.kind) ? MAX_SCENE_HOLD : MAX_HOLD);
     const durationInFrames = holdsToEnd ? lastFrame - fromFrame : Math.min(lastFrame - fromFrame, maxHold, Math.max(MIN_HOLD, end - fromFrame));
     let postFrame = 0;
     if (p.kind === "comment") {
@@ -1024,8 +1025,9 @@ function placeBeats(planned, words, totalFrames, room = {}) {
       text: p.text.trim(),
       sig: p.sig.trim(),
       lines,
+      // A placed text keeps each line's spot: its x and y, two values a line.
       others,
-      values: p.values.slice(0, lines.length),
+      values: p.values.slice(0, p.kind === "placed" ? lines.length * 2 : lines.length),
       lineFrames,
       postFrame,
       ...p.kind === "notify" && ((_b = p.icons) == null ? void 0 : _b.length) && { icons: p.icons.slice(0, lines.length) },
@@ -1124,11 +1126,13 @@ function layoutBeats(beats, subject, safe) {
   const boxes = beats.map(() => null);
   const bands = graphicBands(subject, safe);
   for (const group of groupsOf(beats)) {
+    for (const i of group) if (beats[i].kind === "placed") boxes[i] = FULL_FRAME;
+    if (group.every((i) => beats[i].kind === "placed")) continue;
     if (group.some((i) => isFullFrame(beats[i].kind))) {
       for (const i of group) boxes[i] = EFFECT_KINDS.includes(beats[i].kind) && !effectLayout(beats[i], subject, safe) ? null : FULL_FRAME;
       continue;
     }
-    let members = group.map((i) => beats[i]);
+    let members = group.filter((i) => beats[i].kind !== "placed").map((i) => beats[i]);
     let fit = null;
     while (members.length && !fit) {
       const h = stackHeight(members);
@@ -2524,6 +2528,26 @@ function Stat({ beat, box }) {
     label && /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { marginTop: 14, fontSize: 44, lineHeight: 1.1, fontWeight: 700, color: CAPTION.color }, children: label })
   ] }) });
 }
+function Placed({ beat }) {
+  const { t, fps } = useBeatClock(beat);
+  const leave = beats_clamp((beat.durationInFrames / fps - t) / 0.25);
+  const boxed = beat.sig === "box";
+  return /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { position: "absolute", inset: 0, opacity: leave }, children: beat.lines.map((line, i) => {
+    var _a;
+    const at = ((beat.lineFrames[i] ?? beat.fromFrame) - beat.fromFrame) / fps;
+    const p = beats_clamp((t - at) / 0.22);
+    if (p <= 0) return null;
+    const x = (beat.values[i * 2] ?? 500) / 1e3 * 1080;
+    const y = (beat.values[i * 2 + 1] ?? 400) / 1e3 * 1920;
+    const pop = 0.7 + 0.3 * outCubic(p) + 0.05 * Math.sin(Math.min(1, p) * Math.PI);
+    const second = (_a = beat.others[i]) == null ? void 0 : _a.trim();
+    const type = boxed ? { fontFamily: captionFont, fontWeight: 700, color: "#111111", background: "#ffffff", padding: "0.08em 0.3em", borderRadius: "0.24em" } : { fontFamily: captionFont, fontWeight: 700, color: "#ffffff", textShadow: "0 2px 3px rgba(0,0,0,.55), 0 4px 18px rgba(0,0,0,.35)" };
+    return /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { position: "absolute", left: x, top: y, transform: `translate(-50%, -50%) scale(${pop.toFixed(4)})`, opacity: Math.min(1, p * 2), textAlign: "center", whiteSpace: "nowrap", lineHeight: 1.05 }, children: [
+      /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { fontSize: 62, ...type }, children: line }),
+      second && /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { fontSize: 62, marginTop: boxed ? 8 : 0, ...type }, children: second })
+    ] }, i);
+  }) });
+}
 function Pill({ beat, box }) {
   const surfaces = useSurfaces();
   return /* @__PURE__ */ (0,jsx_runtime.jsx)(Popped, { beat, box, children: (opacity) => /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { ...surfaces.pill, opacity, height: SIZE.pill, padding: "0 26px 0 18px", borderRadius: 27, display: "flex", alignItems: "center", gap: 12, fontSize: 26, fontWeight: 600, whiteSpace: "nowrap" }, children: [
@@ -2619,6 +2643,8 @@ function BeatView({ beat, box }) {
       return /* @__PURE__ */ (0,jsx_runtime.jsx)(Comment, { beat, box });
     case "stat":
       return /* @__PURE__ */ (0,jsx_runtime.jsx)(Stat, { beat, box });
+    case "placed":
+      return /* @__PURE__ */ (0,jsx_runtime.jsx)(Placed, { beat });
     default:
       return null;
   }
@@ -3112,7 +3138,35 @@ function accentWords(line, accent, color) {
     word.toLowerCase().replace(/[^\w']/g, "") === key ? /* @__PURE__ */ (0,jsx_runtime.jsx)("span", { style: { color, fontStyle: "italic" }, children: word }) : word
   ] }, i));
 }
-function HookText({ hook, subject, durationInFrames, promise }) {
+const HIGHLIGHT = { size: 66, maxSize: 78, lineChars: 18, padX: 0.32, padY: 0.12, radius: 0.28, promise: 0.62 };
+function HighlightHook({ hook, subject, durationInFrames, promise }) {
+  const extra = useExtraFonts();
+  const frame = (0,esm.useCurrentFrame)();
+  const { fps } = (0,esm.useVideoConfig)();
+  const safe = useSafe();
+  const tallest = graphicBands(withoutCaption(subject), safe).reduce((a, b) => b.bottom - b.top > a.bottom - a.top ? b : a);
+  const band = { top: safe.top, bottom: subject ? subject.top - BIG_HOOK.browGap : tallest.bottom };
+  const lines = hook.text.length > HIGHLIGHT.lineChars ? balanceLines(hook.text, Math.ceil(hook.text.length / Math.ceil(hook.text.length / HIGHLIGHT.lineChars)) + 2) : [hook.text];
+  const longest = Math.max(...lines.map((l) => l.length));
+  const width = safe.right - safe.left - 40;
+  const size = Math.min(HIGHLIGHT.maxSize, Math.max(48, width / (longest * 0.56 + 2 * HIGHLIGHT.padX)), HIGHLIGHT.size * (longest <= 12 ? 1.15 : 1));
+  const family = extra.hook ?? captionFont;
+  const weight = Math.min(700, extra.hook ? extra.hookMax : 700);
+  const out = Math.min(1, Math.max(0, (durationInFrames - frame) / HOOK_LINE.outFrames));
+  const s = Math.min(1.03, spring(frame / fps));
+  const box = (px) => ({ background: "#ffffff", color: "#111111", padding: `${px * HIGHLIGHT.padY}px ${px * HIGHLIGHT.padX}px`, borderRadius: px * HIGHLIGHT.radius, WebkitBoxDecorationBreak: "clone", boxDecorationBreak: "clone" });
+  const small = Math.round(size * HIGHLIGHT.promise);
+  const ps = Math.min(1, spring((frame - PROMISE_DELAY) / fps));
+  return /* @__PURE__ */ (0,jsx_runtime.jsxs)("div", { style: { position: "absolute", top: band.top, left: safe.left + 20, width, height: Math.max(120, band.bottom - band.top), display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", opacity: out }, children: [
+    /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { textAlign: "center", lineHeight: 1.32, fontFamily: family, fontWeight: weight, fontSize: size, letterSpacing: "-0.015em", opacity: Math.min(1, s * 2), transform: `scale(${(0.9 + 0.1 * s).toFixed(4)})` }, children: lines.map((line, i) => /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { children: /* @__PURE__ */ (0,jsx_runtime.jsx)("span", { style: box(size), children: line }) }, i)) }),
+    promise && /* @__PURE__ */ (0,jsx_runtime.jsx)("div", { style: { marginTop: small * 0.5, textAlign: "center", fontFamily: extra.caption ?? captionFont, fontWeight: 600, fontSize: small, lineHeight: 1.3, opacity: Math.min(1, ps * 2), transform: `translateY(${((1 - ps) * 10).toFixed(1)}px)` }, children: /* @__PURE__ */ (0,jsx_runtime.jsx)("span", { style: box(small), children: promise }) })
+  ] });
+}
+function HookText({ hook, subject, durationInFrames, promise, look }) {
+  if (look === "highlight") return /* @__PURE__ */ (0,jsx_runtime.jsx)(HighlightHook, { hook, subject, durationInFrames, promise });
+  return /* @__PURE__ */ (0,jsx_runtime.jsx)(BigHook, { hook, subject, durationInFrames, promise });
+}
+function BigHook({ hook, subject, durationInFrames, promise }) {
   var _a;
   const brand = useBrand();
   const extra = useExtraFonts();
@@ -3912,6 +3966,11 @@ function calmPace(zoomLimit = Infinity) {
   if (zoomLimit < tight) tight = zoomLimit >= 0.7 ? 1.05 : 0;
   if (!tight) return null;
   return { tight, key: tight, minGap: Math.round(2.5 * motion_FPS), maxGap: 5 * motion_FPS, rhythm: [4.2, 3.6, 4.8, 4] };
+}
+const CLOSE_FACE = 0.2;
+function lightPace(zoomLimit = Infinity, faceShare = 0) {
+  if (faceShare >= CLOSE_FACE || zoomLimit < 1.04) return null;
+  return { tight: 1.04, key: 1.04, minGap: 6 * motion_FPS, maxGap: 8 * motion_FPS, rhythm: [7, 6.5, 7.6, 7.2] };
 }
 function briskPace(zoomLimit = Infinity) {
   if (zoomLimit < 0.7) return null;
@@ -5830,7 +5889,7 @@ function Reel({ src, edl: stored, platform, guides }) {
     edl.beats.map((beat, i) => !behind(beat) && graphic(beat, i)),
     /* @__PURE__ */ (0,jsx_runtime.jsx)(Figure, { edl }),
     (_a = edl.sfx) == null ? void 0 : _a.map((s, i) => /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: s.fromFrame, durationInFrames: s.durationInFrames, name: "sound effect", children: /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Audio, { src: /^[a-z]+:/i.test(s.src) ? s.src : (0,esm.staticFile)(s.src), volume: s.volume }) }, `sfx-${i}`)),
-    showsHookText(edl) && edl.hook && !edl.stack && /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { durationInFrames: hookFrames(edl), name: "hook", children: /* @__PURE__ */ (0,jsx_runtime.jsx)(HookText, { hook: edl.hook, subject: subjectOn(0), durationInFrames: hookFrames(edl), promise: edl.extendedHook ? edl.hook.promise : void 0 }) }),
+    showsHookText(edl) && edl.hook && !edl.stack && /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { durationInFrames: hookFrames(edl), name: "hook", children: /* @__PURE__ */ (0,jsx_runtime.jsx)(HookText, { hook: edl.hook, subject: subjectOn(0), durationInFrames: hookFrames(edl), promise: edl.extendedHook ? edl.hook.promise : void 0, look: edl.hookLook }) }),
     edl.punchIns && ((_b = edl.keyIdeas) == null ? void 0 : _b.map((idea) => /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: idea.fromFrame, durationInFrames: idea.durationInFrames, name: `key idea: ${idea.text}`, children: /* @__PURE__ */ (0,jsx_runtime.jsx)(KeyIdeaLabel, { idea, subject: subjectOn(idea.fromFrame) }) }, `idea-${idea.fromFrame}`))),
     ((_c = edl.cta) == null ? void 0 : _c.card) && /* @__PURE__ */ (0,jsx_runtime.jsx)(esm.Sequence, { from: edl.cta.card.fromFrame, durationInFrames: edl.cta.card.durationInFrames, name: "call to action", children: /* @__PURE__ */ (0,jsx_runtime.jsx)(CtaCard, { cta: edl.cta, subject: subjectOn(edl.cta.card.fromFrame) }) }),
     edl.stack ? /* @__PURE__ */ (0,jsx_runtime.jsx)(StackFront, { edl, subject: edl.subject, quietFrom: (_e = (_d = edl.cta) == null ? void 0 : _d.card) == null ? void 0 : _e.fromFrame }) : /* @__PURE__ */ (0,jsx_runtime.jsx)(

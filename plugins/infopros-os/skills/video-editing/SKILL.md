@@ -50,6 +50,16 @@ Call a short-form one a reel and a long-form one a video. The same tools do both
 - Changes name a page's look in plain words ("put me on the left", "make it a split", "on a light page", "in the serif"): `change_video` handles them.
 - It wears the client's design system when OS has one. It has no hook, no test variants and no Meta or TikTok versions; never mention them.
 
+## When the recordings aren't one ad per video
+
+Ads often come as one long recording holding every ad and its retakes, or with one ad's takes spread across several videos. Work out the ads before editing:
+
+1. **Transcribe every recording** (`transcribe` for each, then `get_transcript`).
+2. **Map the ads from the transcripts:** each ad is the script it says, start to finish. In one long recording, find where each ad starts and ends (a new hook, a pause, "take two", the same lines again for a retake). Across videos, put together the parts that continue each other, in the order they're said; a retake of the same lines belongs to the same ad.
+3. **When something doesn't fit** (a part that matches no ad, an order you can't tell, an ad that seems to be missing lines), ask in one line for the ad scripts, and map against them.
+4. **Say the plan in one line per ad** ("Ad 1: talk.mp4 from 0:12 to 0:58"), then make each ad's take as below.
+5. **Make one file per ad on their computer before uploading** (when you can run commands; else ask them to send one video per ad): a stretch of a recording with `ffmpeg -ss <from> -to <to> -i "<file>" -c:v libx264 -crf 16 -c:a aac -b:a 192k "<ad>.mp4"`, parts of several joined with ffmpeg's concat filter. Then upload each ad's file as usual; OS edits each whole.
+
 ## A look they ask for
 
 When they want videos in a certain style, pass `look` (on `upload_files`, `start_upload`, `import_from_drive`,

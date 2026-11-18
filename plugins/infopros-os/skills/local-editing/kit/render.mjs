@@ -116,17 +116,17 @@ var require_visit = __commonJS({
     visit.BREAK = BREAK2;
     visit.SKIP = SKIP;
     visit.REMOVE = REMOVE;
-    function visit_(key, node, visitor, path7) {
-      const ctrl = callVisitor(key, node, visitor, path7);
+    function visit_(key, node, visitor, path8) {
+      const ctrl = callVisitor(key, node, visitor, path8);
       if (identity2.isNode(ctrl) || identity2.isPair(ctrl)) {
-        replaceNode(key, path7, ctrl);
-        return visit_(key, ctrl, visitor, path7);
+        replaceNode(key, path8, ctrl);
+        return visit_(key, ctrl, visitor, path8);
       }
       if (typeof ctrl !== "symbol") {
         if (identity2.isCollection(node)) {
-          path7 = Object.freeze(path7.concat(node));
+          path8 = Object.freeze(path8.concat(node));
           for (let i = 0; i < node.items.length; ++i) {
-            const ci = visit_(i, node.items[i], visitor, path7);
+            const ci = visit_(i, node.items[i], visitor, path8);
             if (typeof ci === "number")
               i = ci - 1;
             else if (ci === BREAK2)
@@ -137,13 +137,13 @@ var require_visit = __commonJS({
             }
           }
         } else if (identity2.isPair(node)) {
-          path7 = Object.freeze(path7.concat(node));
-          const ck = visit_("key", node.key, visitor, path7);
+          path8 = Object.freeze(path8.concat(node));
+          const ck = visit_("key", node.key, visitor, path8);
           if (ck === BREAK2)
             return BREAK2;
           else if (ck === REMOVE)
             node.key = null;
-          const cv = visit_("value", node.value, visitor, path7);
+          const cv = visit_("value", node.value, visitor, path8);
           if (cv === BREAK2)
             return BREAK2;
           else if (cv === REMOVE)
@@ -164,17 +164,17 @@ var require_visit = __commonJS({
     visitAsync.BREAK = BREAK2;
     visitAsync.SKIP = SKIP;
     visitAsync.REMOVE = REMOVE;
-    async function visitAsync_(key, node, visitor, path7) {
-      const ctrl = await callVisitor(key, node, visitor, path7);
+    async function visitAsync_(key, node, visitor, path8) {
+      const ctrl = await callVisitor(key, node, visitor, path8);
       if (identity2.isNode(ctrl) || identity2.isPair(ctrl)) {
-        replaceNode(key, path7, ctrl);
-        return visitAsync_(key, ctrl, visitor, path7);
+        replaceNode(key, path8, ctrl);
+        return visitAsync_(key, ctrl, visitor, path8);
       }
       if (typeof ctrl !== "symbol") {
         if (identity2.isCollection(node)) {
-          path7 = Object.freeze(path7.concat(node));
+          path8 = Object.freeze(path8.concat(node));
           for (let i = 0; i < node.items.length; ++i) {
-            const ci = await visitAsync_(i, node.items[i], visitor, path7);
+            const ci = await visitAsync_(i, node.items[i], visitor, path8);
             if (typeof ci === "number")
               i = ci - 1;
             else if (ci === BREAK2)
@@ -185,13 +185,13 @@ var require_visit = __commonJS({
             }
           }
         } else if (identity2.isPair(node)) {
-          path7 = Object.freeze(path7.concat(node));
-          const ck = await visitAsync_("key", node.key, visitor, path7);
+          path8 = Object.freeze(path8.concat(node));
+          const ck = await visitAsync_("key", node.key, visitor, path8);
           if (ck === BREAK2)
             return BREAK2;
           else if (ck === REMOVE)
             node.key = null;
-          const cv = await visitAsync_("value", node.value, visitor, path7);
+          const cv = await visitAsync_("value", node.value, visitor, path8);
           if (cv === BREAK2)
             return BREAK2;
           else if (cv === REMOVE)
@@ -218,23 +218,23 @@ var require_visit = __commonJS({
       }
       return visitor;
     }
-    function callVisitor(key, node, visitor, path7) {
+    function callVisitor(key, node, visitor, path8) {
       if (typeof visitor === "function")
-        return visitor(key, node, path7);
+        return visitor(key, node, path8);
       if (identity2.isMap(node))
-        return visitor.Map?.(key, node, path7);
+        return visitor.Map?.(key, node, path8);
       if (identity2.isSeq(node))
-        return visitor.Seq?.(key, node, path7);
+        return visitor.Seq?.(key, node, path8);
       if (identity2.isPair(node))
-        return visitor.Pair?.(key, node, path7);
+        return visitor.Pair?.(key, node, path8);
       if (identity2.isScalar(node))
-        return visitor.Scalar?.(key, node, path7);
+        return visitor.Scalar?.(key, node, path8);
       if (identity2.isAlias(node))
-        return visitor.Alias?.(key, node, path7);
+        return visitor.Alias?.(key, node, path8);
       return void 0;
     }
-    function replaceNode(key, path7, node) {
-      const parent = path7[path7.length - 1];
+    function replaceNode(key, path8, node) {
+      const parent = path8[path8.length - 1];
       if (identity2.isCollection(parent)) {
         parent.items[key] = node;
       } else if (identity2.isPair(parent)) {
@@ -844,10 +844,10 @@ var require_Collection = __commonJS({
     var createNode = require_createNode();
     var identity2 = require_identity();
     var Node = require_Node();
-    function collectionFromPath(schema, path7, value) {
+    function collectionFromPath(schema, path8, value) {
       let v = value;
-      for (let i = path7.length - 1; i >= 0; --i) {
-        const k4 = path7[i];
+      for (let i = path8.length - 1; i >= 0; --i) {
+        const k4 = path8[i];
         if (typeof k4 === "number" && Number.isInteger(k4) && k4 >= 0) {
           const a = [];
           a[k4] = v;
@@ -866,7 +866,7 @@ var require_Collection = __commonJS({
         sourceObjects: /* @__PURE__ */ new Map()
       });
     }
-    var isEmptyPath = (path7) => path7 == null || typeof path7 === "object" && !!path7[Symbol.iterator]().next().done;
+    var isEmptyPath = (path8) => path8 == null || typeof path8 === "object" && !!path8[Symbol.iterator]().next().done;
     var Collection = class extends Node.NodeBase {
       constructor(type, schema) {
         super(type);
@@ -896,11 +896,11 @@ var require_Collection = __commonJS({
        * be a Pair instance or a `{ key, value }` object, which may not have a key
        * that already exists in the map.
        */
-      addIn(path7, value) {
-        if (isEmptyPath(path7))
+      addIn(path8, value) {
+        if (isEmptyPath(path8))
           this.add(value);
         else {
-          const [key, ...rest] = path7;
+          const [key, ...rest] = path8;
           const node = this.get(key, true);
           if (identity2.isCollection(node))
             node.addIn(rest, value);
@@ -914,8 +914,8 @@ var require_Collection = __commonJS({
        * Removes a value from the collection.
        * @returns `true` if the item was found and removed.
        */
-      deleteIn(path7) {
-        const [key, ...rest] = path7;
+      deleteIn(path8) {
+        const [key, ...rest] = path8;
         if (rest.length === 0)
           return this.delete(key);
         const node = this.get(key, true);
@@ -929,8 +929,8 @@ var require_Collection = __commonJS({
        * scalar values from their surrounding node; to disable set `keepScalar` to
        * `true` (collections are always returned intact).
        */
-      getIn(path7, keepScalar) {
-        const [key, ...rest] = path7;
+      getIn(path8, keepScalar) {
+        const [key, ...rest] = path8;
         const node = this.get(key, true);
         if (rest.length === 0)
           return !keepScalar && identity2.isScalar(node) ? node.value : node;
@@ -948,8 +948,8 @@ var require_Collection = __commonJS({
       /**
        * Checks if the collection includes a value with the key `key`.
        */
-      hasIn(path7) {
-        const [key, ...rest] = path7;
+      hasIn(path8) {
+        const [key, ...rest] = path8;
         if (rest.length === 0)
           return this.has(key);
         const node = this.get(key, true);
@@ -959,8 +959,8 @@ var require_Collection = __commonJS({
        * Sets a value in this collection. For `!!set`, `value` needs to be a
        * boolean to add/remove the item from the set.
        */
-      setIn(path7, value) {
-        const [key, ...rest] = path7;
+      setIn(path8, value) {
+        const [key, ...rest] = path8;
         if (rest.length === 0) {
           this.set(key, value);
         } else {
@@ -3475,9 +3475,9 @@ var require_Document = __commonJS({
           this.contents.add(value);
       }
       /** Adds a value to the document. */
-      addIn(path7, value) {
+      addIn(path8, value) {
         if (assertCollection(this.contents))
-          this.contents.addIn(path7, value);
+          this.contents.addIn(path8, value);
       }
       /**
        * Create a new `Alias` node, ensuring that the target `node` has the required anchor.
@@ -3552,14 +3552,14 @@ var require_Document = __commonJS({
        * Removes a value from the document.
        * @returns `true` if the item was found and removed.
        */
-      deleteIn(path7) {
-        if (Collection.isEmptyPath(path7)) {
+      deleteIn(path8) {
+        if (Collection.isEmptyPath(path8)) {
           if (this.contents == null)
             return false;
           this.contents = null;
           return true;
         }
-        return assertCollection(this.contents) ? this.contents.deleteIn(path7) : false;
+        return assertCollection(this.contents) ? this.contents.deleteIn(path8) : false;
       }
       /**
        * Returns item at `key`, or `undefined` if not found. By default unwraps
@@ -3574,10 +3574,10 @@ var require_Document = __commonJS({
        * scalar values from their surrounding node; to disable set `keepScalar` to
        * `true` (collections are always returned intact).
        */
-      getIn(path7, keepScalar) {
-        if (Collection.isEmptyPath(path7))
+      getIn(path8, keepScalar) {
+        if (Collection.isEmptyPath(path8))
           return !keepScalar && identity2.isScalar(this.contents) ? this.contents.value : this.contents;
-        return identity2.isCollection(this.contents) ? this.contents.getIn(path7, keepScalar) : void 0;
+        return identity2.isCollection(this.contents) ? this.contents.getIn(path8, keepScalar) : void 0;
       }
       /**
        * Checks if the document includes a value with the key `key`.
@@ -3588,10 +3588,10 @@ var require_Document = __commonJS({
       /**
        * Checks if the document includes a value at `path`.
        */
-      hasIn(path7) {
-        if (Collection.isEmptyPath(path7))
+      hasIn(path8) {
+        if (Collection.isEmptyPath(path8))
           return this.contents !== void 0;
-        return identity2.isCollection(this.contents) ? this.contents.hasIn(path7) : false;
+        return identity2.isCollection(this.contents) ? this.contents.hasIn(path8) : false;
       }
       /**
        * Sets a value in this document. For `!!set`, `value` needs to be a
@@ -3608,13 +3608,13 @@ var require_Document = __commonJS({
        * Sets a value in this document. For `!!set`, `value` needs to be a
        * boolean to add/remove the item from the set.
        */
-      setIn(path7, value) {
-        if (Collection.isEmptyPath(path7)) {
+      setIn(path8, value) {
+        if (Collection.isEmptyPath(path8)) {
           this.contents = value;
         } else if (this.contents == null) {
-          this.contents = Collection.collectionFromPath(this.schema, Array.from(path7), value);
+          this.contents = Collection.collectionFromPath(this.schema, Array.from(path8), value);
         } else if (assertCollection(this.contents)) {
-          this.contents.setIn(path7, value);
+          this.contents.setIn(path8, value);
         }
       }
       /**
@@ -5574,9 +5574,9 @@ var require_cst_visit = __commonJS({
     visit.BREAK = BREAK2;
     visit.SKIP = SKIP;
     visit.REMOVE = REMOVE;
-    visit.itemAtPath = (cst, path7) => {
+    visit.itemAtPath = (cst, path8) => {
       let item = cst;
-      for (const [field, index] of path7) {
+      for (const [field, index] of path8) {
         const tok = item?.[field];
         if (tok && "items" in tok) {
           item = tok.items[index];
@@ -5585,23 +5585,23 @@ var require_cst_visit = __commonJS({
       }
       return item;
     };
-    visit.parentCollection = (cst, path7) => {
-      const parent = visit.itemAtPath(cst, path7.slice(0, -1));
-      const field = path7[path7.length - 1][0];
+    visit.parentCollection = (cst, path8) => {
+      const parent = visit.itemAtPath(cst, path8.slice(0, -1));
+      const field = path8[path8.length - 1][0];
       const coll = parent?.[field];
       if (coll && "items" in coll)
         return coll;
       throw new Error("Parent collection not found");
     };
-    function _visit(path7, item, visitor) {
-      let ctrl = visitor(item, path7);
+    function _visit(path8, item, visitor) {
+      let ctrl = visitor(item, path8);
       if (typeof ctrl === "symbol")
         return ctrl;
       for (const field of ["key", "value"]) {
         const token = item[field];
         if (token && "items" in token) {
           for (let i = 0; i < token.items.length; ++i) {
-            const ci = _visit(Object.freeze(path7.concat([[field, i]])), token.items[i], visitor);
+            const ci = _visit(Object.freeze(path8.concat([[field, i]])), token.items[i], visitor);
             if (typeof ci === "number")
               i = ci - 1;
             else if (ci === BREAK2)
@@ -5612,10 +5612,10 @@ var require_cst_visit = __commonJS({
             }
           }
           if (typeof ctrl === "function" && field === "key")
-            ctrl = ctrl(item, path7);
+            ctrl = ctrl(item, path8);
         }
       }
-      return typeof ctrl === "function" ? ctrl(item, path7) : ctrl;
+      return typeof ctrl === "function" ? ctrl(item, path8) : ctrl;
     }
     exports.visit = visit;
   }
@@ -7368,11 +7368,11 @@ var require_dist = __commonJS({
 
 // scripts/local-render.ts
 import { spawn as spawn6 } from "node:child_process";
-import { createHash as createHash4 } from "node:crypto";
-import { existsSync as existsSync4, mkdirSync as mkdirSync2 } from "node:fs";
-import { copyFile as copyFile2, mkdir as mkdir3, mkdtemp as mkdtemp3, readdir, readFile as readFile4, rm as rm3, writeFile as writeFile3 } from "node:fs/promises";
+import { createHash as createHash5 } from "node:crypto";
+import { existsSync as existsSync5, mkdirSync as mkdirSync2 } from "node:fs";
+import { copyFile as copyFile2, mkdir as mkdir4, mkdtemp as mkdtemp3, readdir, readFile as readFile4, rm as rm3, writeFile as writeFile4 } from "node:fs/promises";
 import { homedir as homedir2 } from "node:os";
-import path6 from "node:path";
+import path7 from "node:path";
 import { fileURLToPath } from "node:url";
 
 // features/video-ads/engine/long-slop.ts
@@ -7493,8 +7493,8 @@ var STACK_DRESSES = ["box", "blue", "red", "caps", "serif", "bold", "giant"];
 var STACK_PLACES = ["chest", "top", "side"];
 var TRANSITION_KINDS = ["zoom", "push", "flash", "zoom-through", "blur", "whip", "swipe", "dissolve"];
 var TEXT_ICONS = ["none", "live", "no", "yes", "money", "free", "link", "people", "location", "calendar", "clock", "down"];
-var BEAT_KINDS = ["notify", "pill", "card", "bubble", "comment", "list", "moment", "compare", "chart", "phone", "image", "title", "point", "stat", "shoulders", "graph", "tier", "word", "screen", "split", "page"];
-var SIMPLE_BEAT_KINDS = ["notify", "pill", "card", "bubble", "comment", "stat"];
+var BEAT_KINDS = ["notify", "pill", "card", "bubble", "comment", "list", "moment", "compare", "chart", "phone", "image", "title", "point", "stat", "shoulders", "graph", "tier", "word", "screen", "split", "page", "placed"];
+var SIMPLE_BEAT_KINDS = ["notify", "pill", "card", "bubble", "comment", "stat", "placed"];
 var RETIRED_BEAT_KINDS = ["pill", "card", "bubble"];
 var LONG_BEAT_KINDS = ["title", "point", "page"];
 var LONG_PLANNED_KINDS = ["page"];
@@ -7694,13 +7694,13 @@ function buildCut(input) {
   const settle = (t, limit) => prosody.active(t) ? prosody.quietPoint(t, limit) : t;
   const slack = brisk ? BRISK_SLACK : MERGE_SLACK;
   const ranges = [];
-  let open = { srcStart: kept[0].start - clamp5(HEAD_PAD, 0, roomBefore(kept[0])), srcEnd: 0, phraseIds: [kept[0].id] };
+  let open2 = { srcStart: kept[0].start - clamp5(HEAD_PAD, 0, roomBefore(kept[0])), srcEnd: 0, phraseIds: [kept[0].id] };
   for (let i = 1; i < kept.length; i++) {
     const a = kept[i - 1];
     const b = kept[i];
     const target = targetPause(a, prosody, pauseAfter, pace);
     if (b.id === a.id + 1 && b.start - a.end <= target + slack) {
-      open.phraseIds.push(b.id);
+      open2.phraseIds.push(b.id);
       continue;
     }
     const tailLimit = a.end + (brisk ? Math.min(roomAfter(a), BRISK_LONGEST) : roomAfter(a));
@@ -7708,16 +7708,16 @@ function buildCut(input) {
     const tailEnd = settle(a.end + clamp5(target * (1 - LEAD_SHARE), 0.04, roomAfter(a)), tailLimit);
     const headStart = settle(b.start - clamp5(target * LEAD_SHARE, 0.03, roomBefore(b)), headLimit);
     if (b.id === a.id + 1 && headStart <= tailEnd) {
-      open.phraseIds.push(b.id);
+      open2.phraseIds.push(b.id);
       continue;
     }
-    open.srcEnd = tailEnd;
-    ranges.push(open);
-    open = { srcStart: Math.max(headStart, tailEnd), srcEnd: 0, phraseIds: [b.id] };
+    open2.srcEnd = tailEnd;
+    ranges.push(open2);
+    open2 = { srcStart: Math.max(headStart, tailEnd), srcEnd: 0, phraseIds: [b.id] };
   }
   const last = kept[kept.length - 1];
-  open.srcEnd = Math.min(last.end + clamp5(TAIL_PAD, 0.05, roomAfter(last)), duration3);
-  ranges.push(open);
+  open2.srcEnd = Math.min(last.end + clamp5(TAIL_PAD, 0.05, roomAfter(last)), duration3);
+  ranges.push(open2);
   const pieces = repairRanges(ranges, duration3);
   const toFrame = (s) => Math.round(s * FPS);
   const segments = [];
@@ -8287,6 +8287,11 @@ async function sampleFrames(file2, duration3, count3, signal) {
   }
   return stills2;
 }
+async function framesAt(file2, seconds3, signal) {
+  const stills2 = [];
+  for (const t of seconds3) stills2.push(await ffmpeg(["-ss", Math.max(0, t).toFixed(2), "-i", file2, "-frames:v", "1", "-vf", "scale=-2:640", "-q:v", "4", "-f", "image2", "-c:v", "mjpeg", "-"], signal));
+  return stills2;
+}
 async function colorFrames(file2, duration3, count3, signal) {
   const width = 108;
   const height = 192;
@@ -8551,6 +8556,7 @@ var APPS = {
 var APP_IDS = Object.keys(APPS);
 var MIN_HOLD = 2 * FPS;
 var MAX_HOLD = 8 * FPS;
+var PLACED_HOLD = 14 * FPS;
 var MAX_SCENE_HOLD = 12 * FPS;
 var LINE_STAGGER = Math.round(0.35 * FPS);
 function pageHold(p4) {
@@ -8629,7 +8635,7 @@ var hookFrames = (edl) => edl.extendedHook && edl.hook?.promise ? EXTENDED_HOOK_
 function placeBeats(planned, words, totalFrames, room = {}) {
   const notBefore = room.notBefore ?? 0;
   const notAfter = room.notAfter ?? totalFrames;
-  const frameAt = (ms) => Math.round(ms / 1e3 * FPS);
+  const frameAt = (ms2) => Math.round(ms2 / 1e3 * FPS);
   const timed = [];
   for (const p4 of planned) {
     const anchor = words.find((w) => w.index >= p4.anchorWordIndex);
@@ -8640,7 +8646,7 @@ function placeBeats(planned, words, totalFrames, room = {}) {
     if (fromFrame > lastFrame - (p4.kind === "page" && holdsToEnd ? FPS : MIN_HOLD)) continue;
     const until = holdsToEnd ? void 0 : words.find((w) => w.index >= p4.untilWordIndex);
     const end = until ? frameAt(until.startMs) - LEAVE_EARLY : fromFrame + MIN_HOLD;
-    const maxHold = p4.kind === "page" ? pageHold(p4) : EFFECT_HOLD[p4.kind] ?? (isFullFrame(p4.kind) ? MAX_SCENE_HOLD : MAX_HOLD);
+    const maxHold = p4.kind === "placed" ? PLACED_HOLD : p4.kind === "page" ? pageHold(p4) : EFFECT_HOLD[p4.kind] ?? (isFullFrame(p4.kind) ? MAX_SCENE_HOLD : MAX_HOLD);
     const durationInFrames = holdsToEnd ? lastFrame - fromFrame : Math.min(lastFrame - fromFrame, maxHold, Math.max(MIN_HOLD, end - fromFrame));
     let postFrame = 0;
     if (p4.kind === "comment") {
@@ -8671,8 +8677,9 @@ function placeBeats(planned, words, totalFrames, room = {}) {
       text: p4.text.trim(),
       sig: p4.sig.trim(),
       lines,
+      // A placed text keeps each line's spot: its x and y, two values a line.
       others,
-      values: p4.values.slice(0, lines.length),
+      values: p4.values.slice(0, p4.kind === "placed" ? lines.length * 2 : lines.length),
       lineFrames,
       postFrame,
       ...p4.kind === "notify" && p4.icons?.length && { icons: p4.icons.slice(0, lines.length) },
@@ -8760,11 +8767,13 @@ function layoutBeats(beats, subject, safe) {
   const boxes = beats.map(() => null);
   const bands = graphicBands(subject, safe);
   for (const group of groupsOf(beats)) {
+    for (const i of group) if (beats[i].kind === "placed") boxes[i] = FULL_FRAME;
+    if (group.every((i) => beats[i].kind === "placed")) continue;
     if (group.some((i) => isFullFrame(beats[i].kind))) {
       for (const i of group) boxes[i] = EFFECT_KINDS.includes(beats[i].kind) && !effectLayout(beats[i], subject, safe) ? null : FULL_FRAME;
       continue;
     }
-    let members = group.map((i) => beats[i]);
+    let members = group.filter((i) => beats[i].kind !== "placed").map((i) => beats[i]);
     let fit = null;
     while (members.length && !fit) {
       const h = stackHeight(members);
@@ -9182,7 +9191,7 @@ function editChecks(edl, keptWords) {
   });
   const stillFor = longest.length / edl.fps;
   const where = `${stillFor.toFixed(0)}s from ${(longest.from / edl.fps).toFixed(1)}s`;
-  checks.push(!isLong(edl.style) && !edl.own && stillFor > STATIC_SECONDS ? check("edit", "static", "Visual change", "warn", `Nothing changes on screen for ${where} (no cut, camera move or graphic).`) : check("edit", "static", "Visual change", "info", `Longest stretch without a cut, camera move or graphic: ${where}.`));
+  checks.push(!isLong(edl.style) && !edl.own && edl.camera !== "light" && stillFor > STATIC_SECONDS ? check("edit", "static", "Visual change", "warn", `Nothing changes on screen for ${where} (no cut, camera move or graphic).`) : check("edit", "static", "Visual change", "info", `Longest stretch without a cut, camera move or graphic: ${where}.`));
   checks.push(lengthCheck(seconds3));
   if (!edl.hook) checks.push(check("edit", "hook", "Hook in the first 3 seconds", "warn", "No line in the take works as a hook. Reshoot with the value or the problem in the first sentence."));
   else checks.push(edl.hook.saidAtMs > 3e3 ? check("edit", "hook", "Hook in the first 3 seconds", "warn", `The hook line starts at ${(edl.hook.saidAtMs / 1e3).toFixed(1)}s, after the first 3 seconds where viewers decide to keep watching.`) : check("edit", "hook", "Hook in the first 3 seconds", "pass", `"${edl.hook.text}", said at ${(edl.hook.saidAtMs / 1e3).toFixed(1)}s.`));
@@ -9536,10 +9545,10 @@ var RunLog = class {
 
 // features/video-ads/engine/reel-settings.ts
 var REEL_COLORS = ["brand", "custom", "footage"];
-var REEL_ENERGIES = ["natural", "brisk"];
+var REEL_ENERGIES = ["light", "natural", "brisk"];
 var REEL_CAPTIONS = ["simple", "bold", "box", "inverted", "stacked"];
 var REEL_VISUALS = ["none", "light", "standard", "rich"];
-var DEFAULT_REEL_SETTINGS = { colors: "brand", energy: "natural", captions: "simple", visuals: "standard" };
+var DEFAULT_REEL_SETTINGS = { colors: "brand", energy: "light", captions: "simple", visuals: "none" };
 var STYLE_PRESETS = {
   simple: { colors: "footage", energy: "natural", captions: "simple", visuals: "standard" },
   fun: { colors: "brand", energy: "natural", captions: "simple", visuals: "standard" },
@@ -9557,6 +9566,7 @@ function resolveReelSettings(settings) {
   const choices = {
     pace: settings.energy === "brisk" ? "brisk" : "calm",
     sounds: settings.energy === "brisk",
+    ...settings.energy === "light" && { motion: "light" },
     ...!stacked && { captionStyle: CAPTION_STYLE_OF[settings.captions] },
     ...settings.colors === "footage" && { palette: "footage" },
     ...settings.colors === "custom" && settings.customColors && { colors: settings.customColors }
@@ -9567,10 +9577,10 @@ var isReelPreset = (style) => style in STYLE_PRESETS;
 
 // scripts/local-edit.ts
 import { spawn as spawn5 } from "node:child_process";
-import { createHash as createHash3 } from "node:crypto";
-import { existsSync as existsSync3, mkdirSync, readFileSync as readFileSync2, renameSync, writeFileSync } from "node:fs";
-import { appendFile, copyFile, mkdir as mkdir2, mkdtemp as mkdtemp2, readFile as readFile3, rm as rm2, writeFile as writeFile2 } from "node:fs/promises";
-import path5 from "node:path";
+import { createHash as createHash4 } from "node:crypto";
+import { existsSync as existsSync4, mkdirSync, readFileSync as readFileSync3, renameSync, writeFileSync } from "node:fs";
+import { appendFile, copyFile, mkdir as mkdir3, mkdtemp as mkdtemp2, readFile as readFile3, rm as rm2, writeFile as writeFile3 } from "node:fs/promises";
+import path6 from "node:path";
 
 // ../../node_modules/.pnpm/zod@4.4.3/node_modules/zod/v4/classic/external.js
 var external_exports = {};
@@ -10338,10 +10348,10 @@ function mergeDefs(...defs) {
 function cloneDef(schema) {
   return mergeDefs(schema._zod.def);
 }
-function getElementAtPath(obj, path7) {
-  if (!path7)
+function getElementAtPath(obj, path8) {
+  if (!path8)
     return obj;
-  return path7.reduce((acc, key) => acc?.[key], obj);
+  return path8.reduce((acc, key) => acc?.[key], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys = Object.keys(promisesObj);
@@ -10750,11 +10760,11 @@ function explicitlyAborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path7, issues) {
+function prefixIssues(path8, issues) {
   return issues.map((iss) => {
     var _a3;
     (_a3 = iss).path ?? (_a3.path = []);
-    iss.path.unshift(path7);
+    iss.path.unshift(path8);
     return iss;
   });
 }
@@ -10901,16 +10911,16 @@ function flattenError(error51, mapper2 = (issue2) => issue2.message) {
 }
 function formatError(error51, mapper2 = (issue2) => issue2.message) {
   const fieldErrors = { _errors: [] };
-  const processError = (error52, path7 = []) => {
+  const processError = (error52, path8 = []) => {
     for (const issue2 of error52.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path7, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path8, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path7, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path8, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path7, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path8, ...issue2.path]);
       } else {
-        const fullpath = [...path7, ...issue2.path];
+        const fullpath = [...path8, ...issue2.path];
         if (fullpath.length === 0) {
           fieldErrors._errors.push(mapper2(issue2));
         } else {
@@ -10937,17 +10947,17 @@ function formatError(error51, mapper2 = (issue2) => issue2.message) {
 }
 function treeifyError(error51, mapper2 = (issue2) => issue2.message) {
   const result = { errors: [] };
-  const processError = (error52, path7 = []) => {
+  const processError = (error52, path8 = []) => {
     var _a3, _b;
     for (const issue2 of error52.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path7, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path8, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path7, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path8, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path7, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path8, ...issue2.path]);
       } else {
-        const fullpath = [...path7, ...issue2.path];
+        const fullpath = [...path8, ...issue2.path];
         if (fullpath.length === 0) {
           result.errors.push(mapper2(issue2));
           continue;
@@ -10979,8 +10989,8 @@ function treeifyError(error51, mapper2 = (issue2) => issue2.message) {
 }
 function toDotPath(_path) {
   const segs = [];
-  const path7 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
-  for (const seg of path7) {
+  const path8 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
+  for (const seg of path8) {
     if (typeof seg === "number")
       segs.push(`[${seg}]`);
     else if (typeof seg === "symbol")
@@ -23672,13 +23682,13 @@ function resolveRef(ref, ctx) {
   if (!ref.startsWith("#")) {
     throw new Error("External $ref is not supported, only local refs (#/...) are allowed");
   }
-  const path7 = ref.slice(1).split("/").filter(Boolean);
-  if (path7.length === 0) {
+  const path8 = ref.slice(1).split("/").filter(Boolean);
+  if (path8.length === 0) {
     return ctx.rootSchema;
   }
   const defsKey = ctx.version === "draft-2020-12" ? "$defs" : "definitions";
-  if (path7[0] === defsKey) {
-    const key = path7[1];
+  if (path8[0] === defsKey) {
+    const key = path8[1];
     if (!key || !ctx.defs[key]) {
       throw new Error(`Reference not found: ${ref}`);
     }
@@ -24243,15 +24253,15 @@ function highlightCaptions(pages, planned, words) {
   return result;
 }
 function emphasisFrames(pages, prosody, segments, fps) {
-  const frameOf2 = (ms) => Math.round(ms / 1e3 * fps);
+  const frameOf2 = (ms2) => Math.round(ms2 / 1e3 * fps);
   const sourceAt = (frame) => {
     const s = segments.find((x) => frame >= x.outFromFrame && frame < x.outFromFrame + x.durationInFrames);
     return s ? (s.srcFromFrame + frame - s.outFromFrame) / fps : null;
   };
   const peaks = pages.map((p4) => {
     let peak = -Infinity;
-    for (let ms = p4.startMs; ms < p4.endMs; ms += 40) {
-      const t = sourceAt(frameOf2(ms));
+    for (let ms2 = p4.startMs; ms2 < p4.endMs; ms2 += 40) {
+      const t = sourceAt(frameOf2(ms2));
       if (t !== null) peak = Math.max(peak, prosody.loudness(t));
     }
     return peak;
@@ -24456,7 +24466,7 @@ var HOLD = { min: Math.round(1.2 * FPS), max: Math.round(3.5 * FPS) };
 var LEAVE_EARLY2 = 4;
 var KEY_IDEA_MAX_CHARS = 28;
 function placeKeyIdeas(planned, words, totalFrames, room) {
-  const frameAt = (ms) => Math.round(ms / 1e3 * FPS);
+  const frameAt = (ms2) => Math.round(ms2 / 1e3 * FPS);
   const taken = [...room.busy, ...room.beats.map((b) => ({ from: b.fromFrame, to: b.fromFrame + b.durationInFrames }))];
   const timed = planned.flatMap((k4) => {
     const said = words.find((w) => w.index >= k4.wordIndex);
@@ -24642,6 +24652,11 @@ function calmPace(zoomLimit2 = Infinity) {
   if (zoomLimit2 < tight) tight = zoomLimit2 >= 0.7 ? 1.05 : 0;
   if (!tight) return null;
   return { tight, key: tight, minGap: Math.round(2.5 * FPS), maxGap: 5 * FPS, rhythm: [4.2, 3.6, 4.8, 4] };
+}
+var CLOSE_FACE = 0.2;
+function lightPace(zoomLimit2 = Infinity, faceShare = 0) {
+  if (faceShare >= CLOSE_FACE || zoomLimit2 < 1.04) return null;
+  return { tight: 1.04, key: 1.04, minGap: 6 * FPS, maxGap: 8 * FPS, rhythm: [7, 6.5, 7.6, 7.2] };
 }
 function briskPace(zoomLimit2 = Infinity) {
   if (zoomLimit2 < 0.7) return null;
@@ -25051,14 +25066,14 @@ function finishCut(facts, state, cut, hookLine, opening) {
   const card = comment || choices.ctaCard === false || !clear(Math.max(0, cardFrom), cut.totalFrames) ? null : { fromFrame: Math.max(0, cardFrom), durationInFrames: cut.totalFrames - Math.max(0, cardFrom) };
   const cta = ctaWord && state.ctaText ? { text: state.ctaText, detail: plan.cta.detail.trim(), saidAtMs: ctaWord.startMs, card } : null;
   const msOf = (frame) => frame / FPS * 1e3;
-  const framesOf2 = (ms) => Math.round(ms / 1e3 * FPS);
+  const framesOf2 = (ms2) => Math.round(ms2 / 1e3 * FPS);
   const stack = stacked ? planStack({ phrases: plan.keyPhrases ?? [], words: cut.words, hook: hookShown ? hook : null, hookMs: msOf(hookShown), notAfterMs: msOf(cta?.card?.fromFrame ?? cut.totalFrames), subject, safe: SAFE_AREAS.meta }).filter((p4) => clear(framesOf2(p4.startMs), framesOf2(p4.endMs))) : null;
   const effects = context.effects === true;
   const shows = (b) => {
     if (EFFECT_KINDS.includes(b.kind)) return effects && !facts.framing && !own;
     return !(effects && !context.fullScreenScenes && SCENE_KINDS.includes(b.kind));
   };
-  const shownPlan = beats.filter(shows);
+  const shownPlan = beats.filter(shows).filter((b) => b.kind !== "placed" || !placedNearFace(b, subject));
   const planned = effects ? selectVisuals(shownPlan, cut.words, cut.totalFrames / FPS, context.cinematic === true) : shownPlan;
   const timed = placeBeats(planned, cut.words, cut.totalFrames, { notBefore: hookShown, notAfter: cta?.card?.fromFrame });
   const fits = timed.map((b, i) => clear(b.fromFrame, b.fromFrame + b.durationInFrames) && PLATFORMS.every((platform) => layoutBeats(timed, subject, SAFE_AREAS[platform])[i] !== null));
@@ -25083,7 +25098,10 @@ function finishCut(facts, state, cut, hookLine, opening) {
   }
   const branded = isBranded(context.style);
   const punchIns = fun && context.punchIns;
-  const transitions = branded && !own ? chooseTransitions(cut, shown, facts.zoomLimit, { amount: choices.transitions, kinds: choices.transitionKinds }).filter((t) => !punchIns || t.kind !== "zoom") : [];
+  const light = choices.motion === "light";
+  const faceShare = subject ? (subject.bottom - subject.top) / REEL_FRAME.height : 0;
+  const transitionChoice = light ? { amount: faceShare >= CLOSE_FACE ? "none" : "fewer", kinds: ["zoom"] } : { amount: choices.transitions, kinds: choices.transitionKinds };
+  const transitions = branded && !own ? chooseTransitions(cut, shown, facts.zoomLimit, transitionChoice).filter((t) => !punchIns || t.kind !== "zoom") : [];
   const effectSpans = shown.filter((b) => EFFECT_KINDS.includes(b.kind)).map((b) => ({ from: b.fromFrame, to: b.fromFrame + b.durationInFrames }));
   if (effectSpans.length) {
     const pieceEnd = (at) => cut.segments.find((seg) => seg.outFromFrame === at);
@@ -25096,15 +25114,16 @@ function finishCut(facts, state, cut, hookLine, opening) {
     busy: [{ from: 0, to: hookShown }, ...cta?.card ? [{ from: cta.card.fromFrame, to: cut.totalFrames }] : [], ...ownBusy],
     beats: shown
   }) : [];
-  const opener = choices.opener === "none" ? null : choices.opener ?? OPENERS[opening];
+  const opener = choices.opener === "none" || light && !choices.opener ? null : choices.opener ?? OPENERS[opening];
   let motion = branded ? planMotion({ opener, segments: cut.segments, transitions, beats: shown, captions, zoomLimit: facts.zoomLimit }) : null;
   const emphasis = emphasisFrames(captions, prosodyFrom(facts.tracks), cut.segments, FPS);
   const brisk = paceOf(state.style, choices) === "brisk";
   if (motion && punchIns) motion = { ...motion, pushes: [], bumps: [], punches: planPunches({ opener: motion.opener, segments: cut.segments, transitions, beats: shown, captions, keyIdeas, totalFrames: cut.totalFrames, emphasis, pace: brisk && briskPace(facts.zoomLimit) || void 0 }) };
-  if (motion && choices.pushIns === false) motion = { ...motion, pushes: [], bumps: [] };
+  if (motion && (choices.pushIns === false || light)) motion = { ...motion, pushes: [], bumps: [] };
   let reframes = null;
   if (!punchIns && !own) {
     if (brisk) reframes = briskPace(facts.zoomLimit);
+    else if (light) reframes = lightPace(facts.zoomLimit, faceShare);
     else if (!motion?.pushes.length) reframes = calmPace(facts.zoomLimit);
   }
   if (reframes) motion = { opener: motion?.opener ?? null, pushes: [], bumps: [], punches: planPunches({ opener: motion?.opener ?? null, segments: cut.segments, transitions, beats: shown, captions, keyIdeas: [], totalFrames: cut.totalFrames, pace: reframes, emphasis }) };
@@ -25113,6 +25132,8 @@ function finishCut(facts, state, cut, hookLine, opening) {
     style: context.style,
     ...effects && { effects: true },
     ...fun && { hookText: context.hookText && hookClear },
+    ...fun && choices.hookLook && { hookLook: choices.hookLook },
+    ...light && { camera: "light" },
     ...fun && hook?.promise && { extendedHook: true },
     ...punchIns && { punchIns: true, keyIdeas },
     ...fun && context.activeWord && !stacked && { activeWord: true },
@@ -25145,7 +25166,8 @@ function finishCut(facts, state, cut, hookLine, opening) {
     ...facts.captionless?.length && { captionless: facts.captionless },
     ...soundsOf(state.style, choices) && { sfx: planSounds({ tracks: facts.tracks, motion, transitions, beats: shown, cardFrom: cta?.card?.fromFrame ?? null, totalFrames: cut.totalFrames }) },
     // With its visuals planned from a map of its script, the must-see moments nothing shows (qa.ts "Key moments shown").
-    ...state.map && { unshown: unshownInReel(state.map, state, shown, punchIns ? keyIdeas : [], cut.words) }
+    // A reel set to show nothing besides its captions has no visuals to miss.
+    ...state.map && state.options.visuals !== "none" && { unshown: unshownInReel(state.map, state, shown, punchIns ? keyIdeas : [], cut.words) }
   };
   return { edl, cut, reSplitRuns, droppedBeats: timed.filter((_, i) => !fits[i]) };
 }
@@ -25240,6 +25262,16 @@ function unshownSections(map2, shown, words, marked = /* @__PURE__ */ new Set())
     return !shown.some((p4) => Math.min(to, p4.fromFrame + (p4.wordsFrames ?? p4.durationInFrames)) - Math.max(from, p4.fromFrame) >= enough);
   }).map((s) => s.title);
 }
+function placedNearFace(beat, subject) {
+  if (!subject) return false;
+  const half = (subject.bottom - subject.top) * 0.55 + FACE_MARGIN;
+  return beat.lines.some((_, i) => {
+    const x = (beat.values[i * 2] ?? 500) / 1e3 * REEL_FRAME.width;
+    const y = (beat.values[i * 2 + 1] ?? 500) / 1e3 * REEL_FRAME.height;
+    return Math.abs(x - subject.x) < half && y > subject.head - FACE_MARGIN && y < subject.bottom + FACE_MARGIN;
+  });
+}
+var FACE_MARGIN = 90;
 function unshownInReel(map2, state, shown, keyIdeas, words) {
   const marked = /* @__PURE__ */ new Set();
   const mark = (from, to) => {
@@ -25258,9 +25290,9 @@ function hookCandidate(index, v, keep2, main, phrases) {
     const problem = !text3 || sameText(text3, main.text) ? "It had the same hook text as the main edit." : null;
     return { pick: pick2, kind: "hook", keep: [...keep2], hook: { wordIndex: main.wordIndex, text: text3 }, why, problem };
   }
-  const open = [...new Set(v.openPhraseIds)].filter((id) => Number.isInteger(id) && id >= 0 && id < Math.min(phrases.length, v.resumeAtPhraseId));
+  const open2 = [...new Set(v.openPhraseIds)].filter((id) => Number.isInteger(id) && id >= 0 && id < Math.min(phrases.length, v.resumeAtPhraseId));
   const rest = keep2.filter((id) => id >= v.resumeAtPhraseId);
-  const variantKeep = [...open, ...rest].sort((a, b) => a - b);
+  const variantKeep = [...open2, ...rest].sort((a, b) => a - b);
   const wordIndex = v.hookWordIndex >= 0 ? v.hookWordIndex : phrases[variantKeep[0]]?.firstWord ?? -1;
   return { pick: pick2, kind: "hook", keep: variantKeep, hook: { wordIndex, text: text3 || main.text }, why, problem: rest.length ? null : "Nothing of the main edit followed its opening." };
 }
@@ -25622,15 +25654,29 @@ function effectMode(context) {
   if (!context.effects) return "none";
   return context.cinematic ? "often" : "moments";
 }
-var NO_VISUALS_RULES = `Graphics: none. This reel shows its captions and hook only: plan no beats, except a comment box when the
-speaker says to comment a word: kind comment, text = that exact word, title = the account handle from the offer
+var NO_VISUALS_RULES = `Graphics: none. This reel shows its captions and hook only: plan no beats, except placed text where the
+speaker points at spots (below), and a comment box when the speaker says to comment a word: kind comment, text = that exact word, title = the account handle from the offer
 context (or empty), app "messages", the other fields empty, role offer and fit 3.`;
 var LIGHT_RULES = `The look is light: the speaker stays the star, and every graphic earns its place by showing exactly what they
 are saying, typed over the video. No cards, full-screen pages or effects: only these kinds. ${PHONE_RULES}`;
+var PLACED_RULES = `- placed (an edge case; most reels have none): text set at the spots in empty space the speaker clearly points
+  at, as creators type it in the reel editor: the speaker holds a finger or hand up at one spot of empty air or blank
+  wall, then another ("this week" pointing up high, "every month" lower), and each spot gets the words or number said
+  there, which stay and build up. Only when the stills clearly show that pointing, at a spot with nothing there (not at
+  an object, a screen or themselves, and not a hand moving while they talk); never as labels beside the speaker, never
+  for a list or a sum they only say. lines = each text, up to 14 characters, others = an optional second line under
+  each (up to 14) or empty, values = each line's spot as its x then its y in thousandths of the frame from the top
+  left: exactly where the finger points in the still, inside x 100 to 900 and y 150 to 650, clear of the face (code
+  drops any on or beside it). lineWordIndexes = where each is said. sig = "plain" (white bold type with a soft shadow)
+  or "box" (dark type on a white box). title, text and icons empty, app "messages", role number or steps, fit 3.`;
 var NO_HIGHLIGHTS = "Highlights: none; these captions draw no highlights, so leave highlights empty.";
 var beatRules = (context) => {
   if (isLong(context.style)) return LONG_BEAT_RULES;
   if (context.stacked) return STACKED_RULES;
+  return `${reelRules(context)}
+${PLACED_RULES}`;
+};
+function reelRules(context) {
   if (context.visuals === "none") return `${NO_VISUALS_RULES}
 ${context.captionHighlights === false ? NO_HIGHLIGHTS : ""}`;
   if (context.visuals === "light") return `${LIGHT_RULES}
@@ -25639,7 +25685,7 @@ ${context.captionHighlights === false ? NO_HIGHLIGHTS : ""}`;
   const rules = brandRules(context.brand, context.style === "fun", context.fullScreenScenes ?? true, context.activeWord === true, effectMode(context), context.noRoom ?? []);
   return context.captionHighlights === false ? `${rules.slice(0, rules.lastIndexOf("Highlights:")).trimEnd()}
 ${NO_HIGHLIGHTS}` : rules;
-};
+}
 var hookUse = (context) => context.style === "fun" && context.hookText !== false ? "shown as text from the first frame" : "which name the line in the report and are not shown on screen";
 function ownEditNote(own, phrases) {
   if (!own) return "";
@@ -26443,6 +26489,8 @@ var REEL_GRAPHICS_RULES = `You plan the visuals of a vertical talking-head ad (a
    - Every section of importance 3 gets a visual, except the opening line while the hook text shows and the call to
      action, where the rules below allow none: the kind that shows its role best, from those the style allows
      (${SHOWS}); where none fits, a highlight, a key idea or a key phrase, as the style uses them.
+   - Where the palette below allows nothing for a section (a reel that shows only its captions), leave it bare: the
+     map still says what each part is.
    - Importance 2 takes a lighter touch (a highlight, a key phrase, a short typed line) when there is room; importance 1
      nothing. Talking with nothing on screen is part of the rhythm.
    - A visual sits inside its section: anchorWordIndex on the word that names it, untilWordIndex the first word after
@@ -26451,6 +26499,9 @@ var REEL_GRAPHICS_RULES = `You plan the visuals of a vertical talking-head ad (a
      (else story or punch, as it does), fit honest, since code keeps the best-fitting within the ad's attention budget.`;
 function reelGraphicsPrompt(input) {
   const seconds3 = input.words.length ? input.words[input.words.length - 1].endMs / 1e3 : 0;
+  const pictures = input.stills?.length ? `
+THE PICTURES: stills of the cut as it plays, in order, picture n at ${input.stills.map((s, i) => `${i + 1}: ${s.toFixed(1)}s`).join(", ")}. Read from them what the speaker does (pointing, holding something up, how close they are) and where there is room; spots for placed text are read from them.
+` : "";
   return `${REEL_GRAPHICS_RULES}
 
 THE STYLE'S PALETTE AND LIMITS
@@ -26463,6 +26514,7 @@ ${input.brief.trim() || "(no notes: take it from the script)"}
 ${input.hookWordIndex >= 0 ? `The ad opens on word ${input.hookWordIndex}${input.hookText ? `, with the hook text "${input.hookText}"` : ""}.` : ""}
 ${input.ctaWordIndex >= 0 ? `The call to action starts at word ${input.ctaWordIndex}.` : "The speaker says no call to action."}
 
+${pictures}
 THE SCRIPT AS IT PLAYS (${Math.round(seconds3)} seconds; each line starts with its time, then each word's index and text)
 ${timedScript(input.words)}`;
 }
@@ -26480,14 +26532,29 @@ function readReelMap(answer, words) {
 var MAX_READ_THROUGHS = 2;
 var MIN_PAUSE_MS = 150;
 var MAX_PAUSE_MS = 800;
+var STILL_EVERY2 = 2;
+function sourceSecondsAt(cut, outputSeconds) {
+  const frame = Math.round(outputSeconds * FPS);
+  const piece = cut.segments.find((s) => frame >= s.outFromFrame && frame < s.outFromFrame + s.durationInFrames) ?? cut.segments.at(-1);
+  if (!piece) return 0;
+  return (piece.srcFromFrame + Math.min(frame - piece.outFromFrame, piece.durationInFrames - 1)) / FPS;
+}
 function allowedByVisuals(visuals, kind) {
-  if (visuals === "none") return kind === "comment";
+  if (visuals === "none") return kind === "comment" || kind === "placed";
   if (visuals === "light") return SIMPLE_BEAT_KINDS.includes(kind);
   return true;
+}
+function placedFixed(beat) {
+  const lines = beat.lines.map((l) => l.trim()).filter(Boolean).slice(0, 4);
+  if (!lines.length || beat.values.length < lines.length * 2) return null;
+  const clamp5 = (v, lo, hi) => Math.min(hi, Math.max(lo, Math.round(v)));
+  const values = lines.flatMap((_, i) => [clamp5(beat.values[i * 2], 100, 900), clamp5(beat.values[i * 2 + 1], 150, 650)]);
+  return { ...beat, lines, others: beat.others.slice(0, lines.length), values, sig: beat.sig === "box" ? "box" : "plain" };
 }
 function cleanPlan(plan, phrases, words, context) {
   const phraseIds = new Set(phrases.map((p4) => p4.id));
   const inWords = (i) => Number.isInteger(i) && i >= 0 && i < words.length;
+  plan = { ...plan, beats: plan.beats.flatMap((b) => b.kind === "placed" ? placedFixed(b) ?? [] : [b]) };
   return {
     ...plan,
     keepPhraseIds: [...new Set(plan.keepPhraseIds.filter((id) => phraseIds.has(id)))].sort((a, b) => a - b),
@@ -26528,7 +26595,7 @@ async function editTake(input, ports) {
   if (!read.phrases.length) throw new Error("The take has no recognisable speech.");
   const style = input.style ?? "simple";
   const options2 = { variants: !isLong(style) && (input.variants ?? false), fullScreenScenes: input.fullScreenScenes ?? true, hookText: input.hookText ?? true, extendedHook: input.extendedHook ?? false, punchIns: input.punchIns ?? false, activeWord: input.activeWord ?? true, ...!isLong(style) && { effects: true }, ...!isLong(style) && input.visuals && { visuals: input.visuals } };
-  const choices = isLong(style) ? {} : { captionStyle: DEFAULT_CAPTION_STYLE, ...input.choices };
+  const choices = isLong(style) ? {} : { captionStyle: DEFAULT_CAPTION_STYLE, hookLook: "highlight", ...input.choices };
   const context = styleContext(style, options2, input.brand ?? null, input.revision?.trim() || null, input.subject ?? null, choices.captionStyle ?? null);
   await ports.progress?.("planning");
   const visualsLater = !isLong(style) && ports.reelGraphics !== void 0;
@@ -26595,8 +26662,9 @@ async function editTake(input, ports) {
     map2 = planned.map;
   } else if (visualsLater && ports.reelGraphics) {
     const final = cutFor();
-    const asked = reelGraphicsPrompt({ brief: input.brief, words: final.words, context, hookWordIndex: plan.hook.wordIndex, hookText, ctaWordIndex: plan.cta.wordIndex });
-    const planned = readReelMap(await ports.reelGraphics(asked, context), final.words);
+    const seconds3 = Array.from({ length: Math.max(1, Math.floor(final.totalFrames / FPS / STILL_EVERY2)) }, (_, i) => i * STILL_EVERY2 + 0.5);
+    const asked = reelGraphicsPrompt({ brief: input.brief, words: final.words, context, hookWordIndex: plan.hook.wordIndex, hookText, ctaWordIndex: plan.cta.wordIndex, stills: seconds3 });
+    const planned = readReelMap(await ports.reelGraphics(asked, context, seconds3.map((s) => sourceSecondsAt(final, s))), final.words);
     plan = cleanPlan({ ...plan, ...planned.visuals }, phrases, words, context);
     beats = plan.beats;
     plannedKeyIdeas = plan.keyIdeas;
@@ -32064,7 +32132,7 @@ function captionsNeedingBands(edl, source, grey) {
     const segment = edl.segments.find((s) => frame >= s.outFromFrame && frame < s.outFromFrame + s.durationInFrames);
     return segment ? (segment.srcFromFrame + frame - segment.outFromFrame) / edl.fps : null;
   };
-  const overScene = (ms) => edl.beats.some((b) => SCENE_KINDS.includes(b.kind) && ms / 1e3 * edl.fps >= b.fromFrame && ms / 1e3 * edl.fps < b.fromFrame + b.durationInFrames);
+  const overScene = (ms2) => edl.beats.some((b) => SCENE_KINDS.includes(b.kind) && ms2 / 1e3 * edl.fps >= b.fromFrame && ms2 / 1e3 * edl.fps < b.fromFrame + b.durationInFrames);
   const framing = edl.framing;
   const boxAt = (seconds3, half) => {
     if (!framing) return { a: toGrey(540 - half, centerY - line.height / 2), b: toGrey(540 + half, centerY + line.height / 2) };
@@ -32079,8 +32147,8 @@ function captionsNeedingBands(edl, source, grey) {
     if (overScene(caption.startMs)) return;
     const half = Math.min(470, caption.text.length * line.charWidth / 2);
     let worst = 0;
-    for (let ms = caption.startMs; ms < caption.endMs; ms += 1e3 / grey.fps) {
-      const at = sourceSecond(ms);
+    for (let ms2 = caption.startMs; ms2 < caption.endMs; ms2 += 1e3 / grey.fps) {
+      const at = sourceSecond(ms2);
       const frame = at === null ? void 0 : grey.frames[Math.min(grey.frames.length - 1, Math.floor(at * grey.fps))];
       const box = at === null ? null : boxAt(at, half);
       if (!frame || !box) continue;
@@ -32197,15 +32265,15 @@ function headers() {
     ...process.env.NEXT_PUBLIC_SITE_URL ? { "http-referer": process.env.NEXT_PUBLIC_SITE_URL } : {}
   };
 }
-async function post(path7, body, signal, timeoutMs = 18e4) {
-  const response = await fetch(`${OPENROUTER}${path7}`, {
+async function post(path8, body, signal, timeoutMs = 18e4) {
+  const response = await fetch(`${OPENROUTER}${path8}`, {
     method: "POST",
     headers: headers(),
     body: JSON.stringify(body),
     signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(timeoutMs)]) : AbortSignal.timeout(timeoutMs)
   });
   if (!response.ok) {
-    throw new OpenRouterRequestError(`OpenRouter ${path7} returned ${response.status}: ${(await response.text()).slice(0, 300)}`, response.status);
+    throw new OpenRouterRequestError(`OpenRouter ${path8} returned ${response.status}: ${(await response.text()).slice(0, 300)}`, response.status);
   }
   return await response.json();
 }
@@ -32541,6 +32609,110 @@ async function readWebsite(link2, signal) {
   return websiteFacts(page.url, page.text, sheets);
 }
 
+// scripts/local-transcripts.ts
+import { createHash as createHash3 } from "node:crypto";
+import { existsSync as existsSync3, readFileSync as readFileSync2 } from "node:fs";
+import { mkdir as mkdir2, open, stat as stat2, writeFile as writeFile2 } from "node:fs/promises";
+import path5 from "node:path";
+var TAKE_GAP = 1.5;
+var ms = (seconds3) => Math.round(seconds3 * 1e3) / 1e3;
+var transcriptsRoot = (work) => path5.join(path5.dirname(path5.resolve(work)), "transcripts");
+async function fingerprint(file2) {
+  const { size: size2 } = await stat2(file2);
+  const chunk = 4 * 1024 * 1024;
+  const handle = await open(file2, "r");
+  try {
+    const hash2 = createHash3("sha256").update(String(size2));
+    const head = Buffer.alloc(Math.min(chunk, size2));
+    await handle.read(head, 0, head.length, 0);
+    hash2.update(head);
+    if (size2 > chunk) {
+      const tail = Buffer.alloc(Math.min(chunk, size2 - chunk));
+      await handle.read(tail, 0, tail.length, size2 - tail.length);
+      hash2.update(tail);
+    }
+    return hash2.digest("hex").slice(0, 12);
+  } finally {
+    await handle.close();
+  }
+}
+function folderOf(root, file2, id) {
+  const name = path5.basename(file2).replace(/\.[^.]+$/, "").replace(/[^\w.-]+/g, "-").slice(0, 60);
+  return path5.join(root, `${name}-${id}`);
+}
+function wordsFrom(raw) {
+  const list = Array.isArray(raw) ? raw : raw?.words ?? [];
+  return list.map((w) => ({ text: String(w.text ?? w.word ?? "").trim(), start: Number(w.start), end: Number(w.end), ...w.confidence !== void 0 && { confidence: w.confidence }, ...w.speaker && { speaker: w.speaker } })).filter((w) => w.text && Number.isFinite(w.start) && Number.isFinite(w.end) && w.end >= w.start);
+}
+function takesOf(words) {
+  const takes = [];
+  words.forEach((w, i) => {
+    const last = takes.at(-1);
+    if (!last || w.start - words[i - 1].end >= TAKE_GAP) takes.push({ id: takes.length + 1, from: w.start, to: w.end, firstWord: i, lastWord: i, text: w.text, ad: null });
+    else Object.assign(last, { to: w.end, lastWord: i, text: `${last.text} ${w.text}` });
+  });
+  return takes;
+}
+async function saveRecording(root, file2, words, by) {
+  const id = await fingerprint(file2);
+  const folder = folderOf(root, file2, id);
+  await mkdir2(folder, { recursive: true });
+  const probed = await probeTake(file2);
+  await writeFile2(path5.join(folder, "words.json"), JSON.stringify(words));
+  const takesFile = path5.join(folder, "takes.json");
+  if (!existsSync3(takesFile)) await writeFile2(takesFile, JSON.stringify(takesOf(words), null, 1));
+  await writeFile2(path5.join(folder, "about.json"), JSON.stringify({ file: path5.resolve(file2), bytes: (await stat2(file2)).size, fingerprint: id, seconds: probed.duration, words: words.length, transcribedBy: by, at: (/* @__PURE__ */ new Date()).toISOString() }, null, 1));
+  return folder;
+}
+async function savedRecording(root, file2) {
+  const folder = folderOf(root, file2, await fingerprint(file2));
+  if (!existsSync3(path5.join(folder, "words.json"))) return null;
+  const about = JSON.parse(readFileSync2(path5.join(folder, "about.json"), "utf8"));
+  return { words: JSON.parse(readFileSync2(path5.join(folder, "words.json"), "utf8")), seconds: about.seconds };
+}
+function partsOf(job) {
+  if (!job.parts?.length) return [{ file: job.original }];
+  return job.parts.map((part) => {
+    const at = part.lastIndexOf("@");
+    if (at <= 0) return { file: path5.resolve(part) };
+    const [from, to] = part.slice(at + 1).split("-").map((v) => v.trim() === "" ? void 0 : Number(v));
+    return { file: path5.resolve(part.slice(0, at)), from, to };
+  });
+}
+async function takeWords(root, parts) {
+  const words = [];
+  const origin = [];
+  let offset = 0;
+  for (const part of parts) {
+    const saved = await savedRecording(root, part.file);
+    if (!saved) return null;
+    const from = part.from ?? 0;
+    const to = part.to ?? saved.seconds;
+    for (const w of saved.words) {
+      const middle = (w.start + w.end) / 2;
+      if (middle < from || middle >= to) continue;
+      words.push({ ...w, start: ms(Math.max(w.start, from) - from + offset), end: ms(Math.min(w.end, to) - from + offset) });
+      origin.push({ recording: path5.resolve(part.file), at: w.start, end: w.end });
+    }
+    offset += to - from;
+  }
+  return { words, origin };
+}
+function finalTranscript(edit, origin) {
+  return {
+    version: edit.version,
+    script: edit.report.script,
+    seconds: Math.round((edit.keptWords.at(-1)?.endMs ?? 0) / 1e3 * 100) / 100,
+    words: edit.keptWords.map((w) => ({
+      text: w.text,
+      start: w.startMs / 1e3,
+      end: w.endMs / 1e3,
+      takeWord: w.index,
+      ...origin?.[w.index] && { recording: origin[w.index].recording, recordingAt: origin[w.index].at }
+    }))
+  };
+}
+
 // scripts/local-edit.ts
 function settingsOf(job) {
   if (isLong(job.style)) return null;
@@ -32559,24 +32731,24 @@ var FileAsker = class {
     this.controller = new AbortController();
   }
   ask(question) {
-    const hash2 = createHash3("sha256").update(question.name).update(question.instructions).update(question.prompt);
+    const hash2 = createHash4("sha256").update(question.name).update(question.instructions).update(question.prompt);
     for (const image of question.images ?? []) hash2.update(image);
     const id = `${question.name}-${hash2.digest("hex").slice(0, 10)}`;
-    const askFile = path5.join(this.work, "asks", `${id}.md`);
-    const answerFile = path5.join(this.work, "answers", `${id}.json`);
+    const askFile = path6.join(this.work, "asks", `${id}.md`);
+    const answerFile = path6.join(this.work, "answers", `${id}.json`);
     let problem = "";
-    if (existsSync3(answerFile)) {
+    if (existsSync4(answerFile)) {
       try {
-        return Promise.resolve(question.read(JSON.parse(readFileSync2(answerFile, "utf8"))));
+        return Promise.resolve(question.read(JSON.parse(readFileSync3(answerFile, "utf8"))));
       } catch (error51) {
         problem = error51 instanceof Error ? error51.message : String(error51);
         renameSync(answerFile, answerFile.replace(/\.json$/, `.rejected-${Date.now()}.json`));
       }
     }
-    mkdirSync(path5.dirname(askFile), { recursive: true });
-    mkdirSync(path5.dirname(answerFile), { recursive: true });
+    mkdirSync(path6.dirname(askFile), { recursive: true });
+    mkdirSync(path6.dirname(answerFile), { recursive: true });
     const pictures = (question.images ?? []).map((image, i) => {
-      const file2 = path5.join(this.work, "asks", `${id}-${String(i + 1).padStart(2, "0")}.jpg`);
+      const file2 = path6.join(this.work, "asks", `${id}-${String(i + 1).padStart(2, "0")}.jpg`);
       writeFileSync(file2, image);
       return file2;
     });
@@ -32630,19 +32802,21 @@ function object2(answer) {
   return answer;
 }
 var schemaOf = (schema) => JSON.parse(JSON.stringify(external_exports.toJSONSchema(schema, { target: "draft-7" }), (key, value) => (key === "minimum" || key === "maximum") && Math.abs(value) === Number.MAX_SAFE_INTEGER ? void 0 : value));
-var readJson = (file2) => JSON.parse(readFileSync2(file2, "utf8"));
+var readJson = (file2) => JSON.parse(readFileSync3(file2, "utf8"));
 var files = (work) => ({
-  job: path5.join(work, "job.json"),
-  words: path5.join(work, "words.json"),
-  take: path5.join(work, "take.json"),
-  fitted: path5.join(work, "take.mp4"),
-  looked: path5.join(work, "cache", "take-look.json"),
-  framing: path5.join(work, "cache", "framing.json"),
-  sound: path5.join(work, "cache", "sound.json"),
-  look: path5.join(work, "cache", "look.json"),
-  edit: path5.join(work, "edit.json"),
-  audio: path5.join(work, "audio.m4a"),
-  log: path5.join(work, "log.jsonl")
+  job: path6.join(work, "job.json"),
+  words: path6.join(work, "words.json"),
+  origin: path6.join(work, "origin.json"),
+  final: path6.join(work, "transcript-final.json"),
+  take: path6.join(work, "take.json"),
+  fitted: path6.join(work, "take.mp4"),
+  looked: path6.join(work, "cache", "take-look.json"),
+  framing: path6.join(work, "cache", "framing.json"),
+  sound: path6.join(work, "cache", "sound.json"),
+  look: path6.join(work, "cache", "look.json"),
+  edit: path6.join(work, "edit.json"),
+  audio: path6.join(work, "audio.m4a"),
+  log: path6.join(work, "log.jsonl")
 });
 function runLog(work) {
   return new RunLog(async (event) => {
@@ -32653,30 +32827,60 @@ function runLog(work) {
   });
 }
 async function startEdit(original, work, job) {
-  if (!existsSync3(original)) throw new Error(`There is no file at ${original}.`);
+  if (!existsSync4(original)) throw new Error(`There is no file at ${original}.`);
   if (!VIDEO_AD_STYLES.includes(job.style)) throw new Error(`The style must be one of ${VIDEO_AD_STYLES.join(", ")}.`);
-  await mkdir2(work, { recursive: true });
+  await mkdir3(work, { recursive: true });
   const f3 = files(work);
-  const full = { ...job, original: path5.resolve(original) };
-  await writeFile2(f3.job, JSON.stringify(full, null, 1));
+  const full = { ...job, original: path6.resolve(original) };
+  await writeFile3(f3.job, JSON.stringify(full, null, 1));
   const probed = await probeTake(full.original);
   if (!probed.hasAudio) throw new Error("This take has no sound to edit by.");
-  if (!existsSync3(f3.audio)) await run4("ffmpeg", ["-hide_banner", "-v", "error", "-y", "-i", full.original, "-vn", "-ac", "1", "-c:a", "aac", "-b:a", "96k", f3.audio]);
-  return { work, job: f3.job, seconds: Math.round(probed.duration * 10) / 10, size: `${probed.width}x${probed.height}`, audio: f3.audio, transcript: existsSync3(f3.words) ? "ready" : "missing" };
+  if (!existsSync4(f3.audio)) await run4("ffmpeg", ["-hide_banner", "-v", "error", "-y", "-i", full.original, "-vn", "-ac", "1", "-c:a", "aac", "-b:a", "96k", f3.audio]);
+  let transcript = existsSync4(f3.words) ? "ready" : "missing";
+  if (transcript === "missing" && await wordsFromSaved(work, full)) transcript = "ready (from saved transcripts)";
+  return { work, job: f3.job, seconds: Math.round(probed.duration * 10) / 10, size: `${probed.width}x${probed.height}`, audio: f3.audio, transcript };
+}
+async function wordsFromSaved(work, job) {
+  const taken = await takeWords(transcriptsRoot(work), partsOf(job));
+  if (!taken?.words.length) return false;
+  await writeFile3(files(work).words, JSON.stringify(taken.words));
+  await writeFile3(files(work).origin, JSON.stringify(taken.origin));
+  return true;
+}
+async function assembleParts(parts, work) {
+  const read = partsOf({ original: "", parts: [...parts] });
+  read.forEach(({ file: file2, from, to }, i) => {
+    if (!existsSync4(file2)) throw new Error(`There is no file at ${file2}.`);
+    if (from !== void 0 && !Number.isFinite(from) || to !== void 0 && !Number.isFinite(to) || from !== void 0 && to !== void 0 && to <= from) throw new Error(`${parts[i]}: give a range as file@from-to in seconds, such as talk.mp4@12.5-48.`);
+  });
+  const first = await probeTake(read[0].file);
+  const size2 = { width: first.width - first.width % 2, height: first.height - first.height % 2 };
+  await mkdir3(work, { recursive: true });
+  const out = path6.join(work, "take-joined.mp4");
+  const inputs = read.flatMap((p4) => [...p4.from !== void 0 ? ["-ss", String(p4.from)] : [], ...p4.to !== void 0 ? ["-to", String(p4.to)] : [], "-i", p4.file]);
+  const frame = `scale=${size2.width}:${size2.height}:force_original_aspect_ratio=decrease,pad=${size2.width}:${size2.height}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=30,format=yuv420p`;
+  const chains = read.map((_, i) => `[${i}:v]${frame}[v${i}];[${i}:a]aresample=48000,aformat=channel_layouts=stereo[a${i}]`).join(";");
+  const joined2 = `${chains};${read.map((_, i) => `[v${i}][a${i}]`).join("")}concat=n=${read.length}:v=1:a=1[v][a]`;
+  await run4("ffmpeg", ["-hide_banner", "-v", "error", "-y", ...inputs, "-filter_complex", joined2, "-map", "[v]", "-map", "[a]", "-c:v", "libx264", "-preset", "medium", "-crf", "16", "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", `${out}.part.mp4`]);
+  renameSync(`${out}.part.mp4`, out);
+  return out;
 }
 async function importTranscript(work, from) {
-  const raw = /^https?:\/\//.test(from) ? await (await fetch(from)).json() : readJson(from);
-  const list = Array.isArray(raw) ? raw : raw.words ?? [];
-  const words = list.map((w) => ({ text: String(w.text ?? w.word ?? "").trim(), start: Number(w.start), end: Number(w.end), ...w.confidence !== void 0 && { confidence: w.confidence }, ...w.speaker && { speaker: w.speaker } })).filter((w) => w.text && Number.isFinite(w.start) && Number.isFinite(w.end) && w.end >= w.start);
+  const fromOs = /^https?:\/\//.test(from);
+  const words = wordsFrom(fromOs ? await (await fetch(from)).json() : readJson(from));
   if (!words.length) throw new Error("No words with timings were found in that transcript.");
-  await writeFile2(files(work).words, JSON.stringify(words));
-  return { words: words.length };
+  await writeFile3(files(work).words, JSON.stringify(words));
+  const job = readJson(files(work).job);
+  if (job.parts?.length) return { words: words.length };
+  const saved = await saveRecording(transcriptsRoot(work), job.original, words, { by: fromOs ? "os" : "given" });
+  await wordsFromSaved(work, job);
+  return { words: words.length, saved };
 }
 async function cached2(file2, make) {
-  if (existsSync3(file2)) return readJson(file2);
+  if (existsSync4(file2)) return readJson(file2);
   const value = await make();
-  await mkdir2(path5.dirname(file2), { recursive: true });
-  await writeFile2(file2, JSON.stringify(value));
+  await mkdir3(path6.dirname(file2), { recursive: true });
+  await writeFile3(file2, JSON.stringify(value));
   return value;
 }
 var styleOf = (job) => {
@@ -32688,7 +32892,7 @@ async function prepare2(work, job, log, signal) {
   const probed = await log.step("probe take", () => probeTake(job.original, signal));
   const fit = await cached2(f3.take, async () => probed.hdr ? null : planFit(probed, pictureInBars(await detectPicture(job.original, probed.duration, signal), probed), styleOf(job)));
   if (!fit) return { source: job.original, take: probed, fit: null };
-  if (!existsSync3(f3.fitted)) {
+  if (!existsSync4(f3.fitted)) {
     await log.step("fit the take", async () => {
       await writeFittedTake(job.original, `${f3.fitted}.part.mp4`, fit, signal);
       renameSync(`${f3.fitted}.part.mp4`, f3.fitted);
@@ -32701,15 +32905,15 @@ async function lookFor(work, job, asker, signal) {
   if (!asked || !(asked.website || asked.request || asked.screenshots?.length)) return null;
   return cached2(files(work).look, async () => {
     const website = asked.website ? await readWebsite(asked.website, signal) : null;
-    const screenshots = (asked.screenshots ?? []).map((file2) => readFileSync2(file2));
+    const screenshots = (asked.screenshots ?? []).map((file2) => readFileSync3(file2));
     const prompt = lookPrompt({ request: asked.request ?? "", fonts: [], colors: [], website, reelStills: 0, screenshots: screenshots.length });
     return asker.ask({ name: "look-reference", title: "The look they asked for, as settings", instructions: LOOK_INSTRUCTIONS, prompt, schema: schemaOf(lookSchema), images: screenshots, read: (a) => lookFromAnswer(lookSchema.parse(a), { website: asked.website }) });
   });
 }
 async function runEdit(work) {
   const f3 = files(work);
-  if (!existsSync3(f3.job)) throw new Error(`No edit was started in ${work}. Run start first.`);
-  if (!existsSync3(f3.words)) throw new Error(`There is no transcript in ${work} yet: get one (OS's transcribe tool, then import-transcript, or transcribe here) first.`);
+  if (!existsSync4(f3.job)) throw new Error(`No edit was started in ${work}. Run start first.`);
+  if (!existsSync4(f3.words)) throw new Error(`There is no transcript in ${work} yet: get one (OS's transcribe tool, then import-transcript, or transcribe here) first.`);
   const job = readJson(f3.job);
   const settings = settingsOf(job);
   const resolved = settings ? resolveReelSettings(settings) : null;
@@ -32743,7 +32947,10 @@ async function runEdit(work) {
     const ports = {
       plan: (prompt) => log.step("plan the edit", () => asker.ask({ name: "plan", title: "Plan the edit", instructions: EDITOR_INSTRUCTIONS, prompt, schema: schemaOf(planSchemaFor(style)), read: (a) => readPlan(style, planSchemaFor(style).parse(a)) })),
       readThrough: (prompt) => log.step(`review round ${++reviews}`, () => asker.ask({ name: `review-${reviews}`, title: `Read the cut through (round ${reviews})`, instructions: READ_THROUGH_INSTRUCTIONS, prompt, schema: schemaOf(readThroughSchema), read: (a) => readThroughSchema.parse(a) })),
-      reelGraphics: (prompt, context) => log.step("map the script and plan the visuals", () => asker.ask({ name: "visuals", title: "Map the script and plan the visuals", instructions: REEL_GRAPHICS_INSTRUCTIONS, prompt, schema: schemaOf(reelGraphicsSchemaFor(context)), read: (a) => reelGraphicsSchemaFor(context).parse(a) })),
+      reelGraphics: (prompt, context, stills2) => log.step("map the script and plan the visuals", async () => {
+        const images = await framesAt(source, stills2, signal);
+        return asker.ask({ name: "visuals", title: "Map the script and plan the visuals", instructions: REEL_GRAPHICS_INSTRUCTIONS, prompt, schema: schemaOf(reelGraphicsSchemaFor(context)), images, read: (a) => reelGraphicsSchemaFor(context).parse(a) });
+      }),
       graphics: (prompt) => log.step("map the script and plan the pages", () => asker.ask({ name: "graphics", title: "Map the script and plan the pages", instructions: GRAPHICS_INSTRUCTIONS, prompt, schema: schemaOf(scriptMapSchema), read: (a) => scriptMapSchema.parse(a) })),
       listen: async () => null
     };
@@ -32771,7 +32978,7 @@ async function runEdit(work) {
       ...framing && { framing }
     }, ports);
     const dressed = look2 ? await dressInLook(edited, look2, log, signal) : null;
-    const scratch = await mkdtemp2(path5.join(work, ".look-"));
+    const scratch = await mkdtemp2(path6.join(work, ".look-"));
     let looked2;
     try {
       looked2 = await lookAtFinishedEdit(source, dressed?.result ?? edited, scratch, log, signal, looks);
@@ -32792,10 +32999,14 @@ async function runEdit(work) {
   }
 }
 async function keep(work, edit) {
-  await mkdir2(path5.join(work, "versions"), { recursive: true });
+  await mkdir3(path6.join(work, "versions"), { recursive: true });
   const body = JSON.stringify(edit);
-  await writeFile2(path5.join(work, "versions", `v${edit.version}.json`), body);
-  await writeFile2(files(work).edit, body);
+  await writeFile3(path6.join(work, "versions", `v${edit.version}.json`), body);
+  await writeFile3(files(work).edit, body);
+  const origin = existsSync4(files(work).origin) ? readJson(files(work).origin) : null;
+  const transcript = JSON.stringify(finalTranscript(edit, origin), null, 1);
+  await writeFile3(path6.join(work, "versions", `v${edit.version}-transcript.json`), transcript);
+  await writeFile3(files(work).final, transcript);
 }
 async function changeEdit(work, request, details = {}) {
   const f3 = files(work);
@@ -32810,7 +33021,7 @@ async function changeEdit(work, request, details = {}) {
     const read = readTake(facts, state.plan.wordFixes);
     const before = mainCut(facts, state, read);
     const at = details.atSeconds == null ? null : Math.min(Math.max(details.atSeconds, 0), current.edl.durationInFrames / FPS - 0.1);
-    const screenshots = (details.screenshots ?? []).map((file2) => readFileSync2(file2));
+    const screenshots = (details.screenshots ?? []).map((file2) => readFileSync3(file2));
     const stills2 = at === null ? [] : await stillsOf(work, current.edl, [Math.max(0, at - 0.5), at]);
     const prompt = changePrompt({ facts, state, take: read, cut: before, edl: current.edl, request, details: { atSeconds: at, screenshots: screenshots.length, stills: at === null ? [] : [Math.max(0, at - 0.5), at] }, findings: [] });
     const plan = await log.step("work out the change", () => asker.ask({
@@ -32856,13 +33067,13 @@ async function stillsOf(work, edl, seconds3) {
 async function stillFiles(work, edl, seconds3, guides = false) {
   const edit = readJson(files(work).edit);
   const frames = seconds3.map((s) => Math.min(Math.max(0, Math.round(s * edl.fps)), edl.durationInFrames - 1));
-  const scratch = await mkdtemp2(path5.join(work, ".stills-"));
+  const scratch = await mkdtemp2(path6.join(work, ".stills-"));
   try {
     const made = await renderVideoAdStills({ sourceFile: edit.source, edl, platform: "meta", frames, workDir: scratch, guides });
-    await mkdir2(path5.join(work, "stills"), { recursive: true });
+    await mkdir3(path6.join(work, "stills"), { recursive: true });
     const kept = [];
     for (const [i, file2] of made.entries()) {
-      const to = path5.join(work, "stills", `v${edit.version}-${seconds3[i].toFixed(1)}s.jpg`);
+      const to = path6.join(work, "stills", `v${edit.version}-${seconds3[i].toFixed(1)}s.jpg`);
       await copyFile(file2, to);
       kept.push(to);
     }
@@ -32897,22 +33108,22 @@ function run4(command2, args2) {
 }
 
 // scripts/local-render.ts
-var here = path6.dirname(fileURLToPath(import.meta.url));
-if (existsSync4(path6.join(here, "composition", "index.html"))) process.env.VIDEO_AD_COMPOSITION_DIR ||= path6.join(here, "composition");
-var installed = path6.basename(path6.dirname(here)) === "render-kit";
-var KIT_HOME = installed ? path6.dirname(path6.dirname(here)) : path6.join(homedir2(), ".infopros");
+var here = path7.dirname(fileURLToPath(import.meta.url));
+if (existsSync5(path7.join(here, "composition", "index.html"))) process.env.VIDEO_AD_COMPOSITION_DIR ||= path7.join(here, "composition");
+var installed = path7.basename(path7.dirname(here)) === "render-kit";
+var KIT_HOME = installed ? path7.dirname(path7.dirname(here)) : path7.join(homedir2(), ".infopros");
 if (installed) {
-  const tmp = path6.join(KIT_HOME, "tmp");
+  const tmp = path7.join(KIT_HOME, "tmp");
   mkdirSync2(tmp, { recursive: true });
   for (const name of ["TMPDIR", "TMP", "TEMP"]) process.env[name] = tmp;
-  process.env.PIP_CACHE_DIR ||= path6.join(KIT_HOME, "cache", "pip");
-  process.env.HF_HOME ||= path6.join(KIT_HOME, "models", "huggingface");
-  process.env.CUTOUT_MODEL ||= path6.join(KIT_HOME, "models", "rvm_mobilenetv3_fp32.onnx");
+  process.env.PIP_CACHE_DIR ||= path7.join(KIT_HOME, "cache", "pip");
+  process.env.HF_HOME ||= path7.join(KIT_HOME, "models", "huggingface");
+  process.env.CUTOUT_MODEL ||= path7.join(KIT_HOME, "models", "rvm_mobilenetv3_fp32.onnx");
 }
-var CUTOUT_HOME = path6.join(KIT_HOME, "cutout");
-var cutoutPython = () => process.platform === "win32" ? path6.join(CUTOUT_HOME, "Scripts", "python.exe") : path6.join(CUTOUT_HOME, "bin", "python");
-if (existsSync4(path6.join(here, "cutout", "cutout.py"))) process.env.CUTOUT_SCRIPT ||= path6.join(here, "cutout", "cutout.py");
-if (!process.env.CUTOUT_PYTHON && existsSync4(cutoutPython())) process.env.CUTOUT_PYTHON = cutoutPython();
+var CUTOUT_HOME = path7.join(KIT_HOME, "cutout");
+var cutoutPython = () => process.platform === "win32" ? path7.join(CUTOUT_HOME, "Scripts", "python.exe") : path7.join(CUTOUT_HOME, "bin", "python");
+if (existsSync5(path7.join(here, "cutout", "cutout.py"))) process.env.CUTOUT_SCRIPT ||= path7.join(here, "cutout", "cutout.py");
+if (!process.env.CUTOUT_PYTHON && existsSync5(cutoutPython())) process.env.CUTOUT_PYTHON = cutoutPython();
 var MODEL_URL = "https://github.com/PeterL1n/RobustVideoMatting/releases/download/v1.0.0/rvm_mobilenetv3_fp32.onnx";
 var MODEL_SHA256 = "88d4531297118f595bf2fd60f6f566aec2e559393802d1f436c380f0cbbd2828";
 var CUTOUT_PACKAGES = ["onnxruntime>=1.23.2,<2", "numpy>=2.3.4,<3"];
@@ -32927,33 +33138,33 @@ function run5(command2, args2, missing = "Install ffmpeg first.") {
     child.on("close", (code) => code === 0 ? resolve(Buffer.concat(out).toString()) : reject(new Error(`${command2} failed (${code}): ${Buffer.concat(err).toString().slice(-500)}`)));
   });
 }
-var sha256 = (bytes) => createHash4("sha256").update(bytes).digest("hex");
+var sha256 = (bytes) => createHash5("sha256").update(bytes).digest("hex");
 async function setupCutout() {
   const needPython = "Install Python 3.10 or later first.";
-  if (!existsSync4(cutoutPython())) {
-    await mkdir3(path6.dirname(CUTOUT_HOME), { recursive: true });
+  if (!existsSync5(cutoutPython())) {
+    await mkdir4(path7.dirname(CUTOUT_HOME), { recursive: true });
     if (process.platform === "win32") await run5("py", ["-3", "-m", "venv", CUTOUT_HOME], needPython);
     else await run5("python3", ["-m", "venv", CUTOUT_HOME], needPython);
   }
   await run5(cutoutPython(), ["-m", "pip", "install", "--quiet", "--disable-pip-version-check", "--only-binary=:all:", ...CUTOUT_PACKAGES], needPython);
   const file2 = model();
-  if (!existsSync4(file2) || sha256(await readFile4(file2)) !== MODEL_SHA256) {
+  if (!existsSync5(file2) || sha256(await readFile4(file2)) !== MODEL_SHA256) {
     const response = await fetch(MODEL_URL);
     if (!response.ok) throw new Error(`The matting model could not be downloaded (${response.status}).`);
     const bytes = new Uint8Array(await response.arrayBuffer());
     if (sha256(bytes) !== MODEL_SHA256) throw new Error("The matting model downloaded does not match its checksum.");
-    await mkdir3(path6.dirname(file2), { recursive: true });
-    await writeFile3(file2, bytes);
+    await mkdir4(path7.dirname(file2), { recursive: true });
+    await writeFile4(file2, bytes);
   }
   console.log(JSON.stringify({ cutout: "ready", python: cutoutPython(), model: file2 }));
 }
 async function render(work, out) {
-  const edit = JSON.parse(await readFile4(path6.join(work, "edit.json"), "utf8"));
+  const edit = JSON.parse(await readFile4(path7.join(work, "edit.json"), "utf8"));
   const original = edit.source;
   const needsCutout = behindSourceWindows([edit.edl]).length > 0;
   const platforms = ["meta"];
-  await mkdir3(path6.dirname(out), { recursive: true });
-  const workDir = await mkdtemp3(path6.join(path6.dirname(out), ".infopros-render-"));
+  await mkdir4(path7.dirname(out), { recursive: true });
+  const workDir = await mkdtemp3(path7.join(path7.dirname(out), ".infopros-render-"));
   const started = Date.now();
   let shown = -1;
   try {
@@ -32986,25 +33197,37 @@ async function render(work, out) {
     await rm3(workDir, { recursive: true, force: true });
   }
 }
-var WHISPER_HOME = path6.join(KIT_HOME, "whisper");
-var whisperPython = () => process.platform === "win32" ? path6.join(WHISPER_HOME, "Scripts", "python.exe") : path6.join(WHISPER_HOME, "bin", "python");
+var WHISPER_HOME = path7.join(KIT_HOME, "whisper");
+var whisperPython = () => process.platform === "win32" ? path7.join(WHISPER_HOME, "Scripts", "python.exe") : path7.join(WHISPER_HOME, "bin", "python");
 async function transcribeHere(work, size2, language) {
-  const job = JSON.parse(await readFile4(path6.join(work, "job.json"), "utf8"));
+  const job = JSON.parse(await readFile4(path7.join(work, "job.json"), "utf8"));
+  const root = transcriptsRoot(work);
+  const needed = [];
+  for (const part of partsOf(job)) if (!needed.includes(part.file) && !await savedRecording(root, part.file)) needed.push(part.file);
   const needPython = "Install Python 3.10 or later first.";
-  if (!existsSync4(whisperPython())) {
-    await mkdir3(path6.dirname(WHISPER_HOME), { recursive: true });
+  if (needed.length && !existsSync5(whisperPython())) {
+    await mkdir4(path7.dirname(WHISPER_HOME), { recursive: true });
     if (process.platform === "win32") await run5("py", ["-3", "-m", "venv", WHISPER_HOME], needPython);
     else await run5("python3", ["-m", "venv", WHISPER_HOME], needPython);
   }
-  await run5(whisperPython(), ["-m", "pip", "install", "--quiet", "--disable-pip-version-check", "--only-binary=:all:", "faster-whisper>=1.1,<2"], needPython);
-  const pcm = await decodeAnalysisPcm(job.original);
-  const audio = path6.join(work, "sound.f32");
-  await writeFile3(audio, new Uint8Array(pcm.buffer, pcm.byteOffset, pcm.byteLength));
-  try {
-    process.stdout.write(await run5(whisperPython(), [path6.join(here, "whisper", "transcribe.py"), audio, path6.join(work, "words.json"), size2, language], needPython));
-  } finally {
-    await rm3(audio, { force: true });
+  if (needed.length) await run5(whisperPython(), ["-m", "pip", "install", "--quiet", "--disable-pip-version-check", "--only-binary=:all:", "faster-whisper>=1.1,<2"], needPython);
+  for (const recording of needed) {
+    const pcm = await decodeAnalysisPcm(recording);
+    const audio = path7.join(work, "sound.f32");
+    const out = path7.join(work, "cache", "whisper-words.json");
+    await mkdir4(path7.dirname(out), { recursive: true });
+    await writeFile4(audio, new Uint8Array(pcm.buffer, pcm.byteOffset, pcm.byteLength));
+    try {
+      process.stdout.write(await run5(whisperPython(), [path7.join(here, "whisper", "transcribe.py"), audio, out, size2, language], needPython));
+      const folder = await saveRecording(root, recording, wordsFrom(JSON.parse(await readFile4(out, "utf8"))), { by: "whisper", model: size2 });
+      console.error(`saved: ${folder}`);
+    } finally {
+      await rm3(audio, { force: true });
+      await rm3(out, { force: true });
+    }
   }
+  if (!await wordsFromSaved(work, job)) throw new Error("No words were heard in this take.");
+  console.log(JSON.stringify({ transcribed: needed.length, fromSaved: partsOf(job).length - needed.length, words: JSON.parse(await readFile4(path7.join(work, "words.json"), "utf8")).length }));
 }
 function option(args2, name) {
   const at = args2.indexOf(name);
@@ -33021,14 +33244,14 @@ function flag(args2, name) {
   return at >= 0;
 }
 async function stills(work, at, guides) {
-  const edit = JSON.parse(await readFile4(path6.join(work, "edit.json"), "utf8"));
+  const edit = JSON.parse(await readFile4(path7.join(work, "edit.json"), "utf8"));
   const { edl } = edit;
   const seconds3 = at ? at.split(",").map(Number).filter(Number.isFinite) : [
     ...edl.beats.map((b) => (b.kind === "comment" ? b.postFrame + 30 : b.fromFrame + Math.min(24, b.durationInFrames - 8)) / edl.fps),
     ...[0.03, 0.2, 0.5, 0.8].map((share) => edl.durationInFrames * share / edl.fps)
   ].sort((a, b) => a - b);
   const files2 = await stillFiles(work, edl, seconds3, guides);
-  const sheet = path6.join(work, "stills", `v${edit.version}-sheet.jpg`);
+  const sheet = path7.join(work, "stills", `v${edit.version}-sheet.jpg`);
   const cols = Math.min(6, files2.length);
   const [w, h] = edl.width > edl.height ? [480, 270] : [270, 480];
   const tiles = files2.map((_, i) => `[${i}:v]scale=${w}:${h},drawtext=text='${seconds3[i].toFixed(1)}s':x=6:y=h-24:fontsize=16:fontcolor=yellow${files2.length > 1 ? `[t${i}]` : ""}`);
@@ -33076,7 +33299,7 @@ async function answering(step) {
 var [command, ...args] = process.argv.slice(2);
 if (installed) {
   const origin = process.cwd();
-  const from = (value) => /^https?:\/\//.test(value) ? value : path6.resolve(origin, value);
+  const from = (value) => /^https?:\/\//.test(value) ? value : path7.resolve(origin, value);
   const pathFlags = /* @__PURE__ */ new Set(["--brand", "--look-screenshot", "--screenshot"]);
   const textFlags = /* @__PURE__ */ new Set(["--style", "--look-website", "--look-request", "--model", "--language", "--at"]);
   let positional = 0;
@@ -33085,7 +33308,7 @@ if (installed) {
     if (arg.startsWith("--")) {
       const value = args[i + 1];
       if (value !== void 0 && pathFlags.has(arg)) args[++i] = from(value);
-      else if (value !== void 0 && arg === "--notes") args[++i] = existsSync4(path6.resolve(origin, value)) ? path6.resolve(origin, value) : value;
+      else if (value !== void 0 && arg === "--notes") args[++i] = existsSync5(path7.resolve(origin, value)) ? path7.resolve(origin, value) : value;
       else if (textFlags.has(arg)) i++;
       continue;
     }
@@ -33094,30 +33317,36 @@ if (installed) {
   }
   process.chdir(here);
 }
-var usage = "usage: node render.mjs start <original> <work> [--style <style>] [settings and notes, see above] | transcribe <work> | import-transcript <work> <file|URL> | edit <work> [--fresh] | change <work> <request> [--at <s>] [--screenshot <file>]... | stills <work> [--at 1.5,8] [--guides] | render <work> [<out.mp4>] | setup-cutout";
+var usage = "usage: node render.mjs start <original> <work> | start <work> --part <file>[@<from>-<to>]... [--style <style>] [settings and notes, see above] | transcribe <work> | import-transcript <work> <file|URL> | edit <work> [--fresh] | change <work> <request> [--at <s>] [--screenshot <file>]... | stills <work> [--at 1.5,8] [--guides] | render <work> [<out.mp4>] | setup-cutout";
 try {
   if (command === "setup-cutout") await setupCutout();
-  else if (command === "render" && args[0] && existsSync4(path6.join(args[0], "edit.json"))) {
-    const edit = JSON.parse(await readFile4(path6.join(args[0], "edit.json"), "utf8"));
-    await render(args[0], args[1] ?? path6.join(args[0], `${path6.basename(args[0])}-v${edit.version}.mp4`));
-  } else if (command === "start" && args[0] && args[1]) {
-    const style = option(args, "--style") ?? "cinematic";
+  else if (command === "render" && args[0] && existsSync5(path7.join(args[0], "edit.json"))) {
+    const edit = JSON.parse(await readFile4(path7.join(args[0], "edit.json"), "utf8"));
+    await render(args[0], args[1] ?? path7.join(args[0], `${path7.basename(args[0])}-v${edit.version}.mp4`));
+  } else if (command === "start" && args[0]) {
+    const parts = options(args, "--part");
+    const named2 = option(args, "--style");
+    const style = named2 ?? "fun";
     const notes = option(args, "--notes") ?? "";
     const brand = option(args, "--brand");
     const website = option(args, "--look-website");
     const request = option(args, "--look-request");
-    const screenshots = options(args, "--look-screenshot").map((f3) => path6.resolve(f3));
+    const screenshots = options(args, "--look-screenshot").map((f3) => path7.resolve(f3));
     const variants = flag(args, "--variants");
     const punchIns = flag(args, "--punch-ins");
     const activeWord = flag(args, "--active-word");
     const extendedHook = flag(args, "--extended-hook");
-    const settings = reelSettingsFrom(args);
+    const settings = { ...named2 ? {} : DEFAULT_REEL_SETTINGS, ...reelSettingsFrom(args) };
     if (style === "long" && Object.keys(settings).length) throw new Error("--colors, --energy, --captions, --visuals and --color are for reels; a long video has its own look.");
     const look2 = website || request || screenshots.length ? { ...website && { website }, ...request && { request }, ...screenshots.length && { screenshots } } : void 0;
-    console.log(JSON.stringify(await startEdit(args[0], args[1], {
+    if (!parts.length && !args[1]) throw new Error(usage);
+    const work = parts.length ? args[0] : args[1];
+    const original = parts.length ? await assembleParts(parts, work) : args[0];
+    console.log(JSON.stringify(await startEdit(original, work, {
+      ...parts.length && { parts },
       style,
-      notes: notes && existsSync4(notes) ? await readFile4(notes, "utf8") : notes,
-      ...brand && { brand: path6.resolve(brand) },
+      notes: notes && existsSync5(notes) ? await readFile4(notes, "utf8") : notes,
+      ...brand && { brand: path7.resolve(brand) },
       ...look2 && { look: look2 },
       variants,
       options: { punchIns, activeWord, extendedHook },
@@ -33129,7 +33358,7 @@ try {
     await transcribeHere(args[0], size2, language);
   } else if (command === "import-transcript" && args[0] && args[1]) console.log(JSON.stringify(await importTranscript(args[0], args[1])));
   else if (command === "edit" && args[0]) {
-    if (flag(args, "--fresh")) await rm3(path6.join(args[0], "cache"), { recursive: true, force: true });
+    if (flag(args, "--fresh")) await rm3(path7.join(args[0], "cache"), { recursive: true, force: true });
     await answering(async () => summaryOf(await runEdit(args[0])));
   } else if (command === "change" && args[0] && args[1]) {
     const at = option(args, "--at");
