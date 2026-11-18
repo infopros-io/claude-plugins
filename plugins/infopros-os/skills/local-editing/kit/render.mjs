@@ -7367,9 +7367,9 @@ var require_dist = __commonJS({
 });
 
 // scripts/local-render.ts
-import { spawn as spawn6 } from "node:child_process";
+import { spawn as spawn7 } from "node:child_process";
 import { createHash as createHash5 } from "node:crypto";
-import { existsSync as existsSync5, mkdirSync as mkdirSync2 } from "node:fs";
+import { existsSync as existsSync5, mkdirSync as mkdirSync2, readFileSync as readFileSync4 } from "node:fs";
 import { copyFile as copyFile2, mkdir as mkdir4, mkdtemp as mkdtemp3, readdir, readFile as readFile4, rm as rm3, writeFile as writeFile4 } from "node:fs/promises";
 import { homedir as homedir2 } from "node:os";
 import path7 from "node:path";
@@ -8233,6 +8233,7 @@ function cropsInLog(log) {
 }
 
 // features/video-ads/server/audio.ts
+var FADE = 0.03;
 function ffmpeg(args2, signal) {
   return new Promise((resolve, reject) => {
     const child = spawn("ffmpeg", ["-hide_banner", "-v", "error", ...capThreads(args2)], { signal, stdio: ["ignore", "pipe", "pipe"] });
@@ -8302,6 +8303,14 @@ async function colorFrames(file2, duration3, count3, signal) {
     if (raw.byteLength >= width * height * 3) frames.push({ width, height, rgb: new Uint8Array(raw.buffer, raw.byteOffset, width * height * 3) });
   }
   return frames;
+}
+function stitchedAudio(file2, ranges, signal) {
+  const parts = ranges.map((r2, i) => {
+    const d = r2.srcEnd - r2.srcStart;
+    return `[0:a]atrim=start=${r2.srcStart.toFixed(3)}:end=${r2.srcEnd.toFixed(3)},asetpts=PTS-STARTPTS,afade=t=in:d=${FADE},afade=t=out:st=${Math.max(0, d - FADE).toFixed(3)}:d=${FADE}[a${i}]`;
+  });
+  const graph = `${parts.join(";")};${ranges.map((_, i) => `[a${i}]`).join("")}concat=n=${ranges.length}:v=0:a=1[out]`;
+  return ffmpeg(["-i", file2, "-filter_complex", graph, "-map", "[out]", "-ac", "1", "-ar", "24000", "-c:a", "libmp3lame", "-b:a", "64k", "-f", "mp3", "-"], signal);
 }
 function loudnormReport(args2, signal) {
   return new Promise((resolve, reject) => {
@@ -9576,7 +9585,7 @@ function resolveReelSettings(settings) {
 var isReelPreset = (style) => style in STYLE_PRESETS;
 
 // scripts/local-edit.ts
-import { spawn as spawn5 } from "node:child_process";
+import { spawn as spawn6 } from "node:child_process";
 import { createHash as createHash4 } from "node:crypto";
 import { existsSync as existsSync4, mkdirSync, readFileSync as readFileSync3, renameSync, writeFileSync } from "node:fs";
 import { appendFile, copyFile, mkdir as mkdir3, mkdtemp as mkdtemp2, readFile as readFile3, rm as rm2, writeFile as writeFile3 } from "node:fs/promises";
@@ -25845,6 +25854,53 @@ ${isLong(input.style.style) ? LONG_NO_BEATS : beatRules(input.style)}
 KEPT WORDS (index: word)
 ${cut.words.map((w) => `${w.index}: ${w.text}`).join("\n")}`;
 }
+var LISTENING_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["joins", "overall", "heard"],
+  properties: {
+    joins: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["join", "natural", "severity", "issue"],
+        properties: {
+          join: { type: "integer" },
+          natural: { type: "boolean" },
+          severity: { type: "string", enum: ["none", "minor", "major"] },
+          issue: { type: "string" }
+        }
+      }
+    },
+    overall: { type: "string" },
+    heard: { type: "string" }
+  }
+};
+var clock = (s) => `${Math.floor(s / 60)}:${(s % 60).toFixed(1).padStart(4, "0")}`;
+function listeningPrompt(joins, script2, long = false) {
+  return `You are a dialogue editor checking an edited voice track for ${long ? "a long-form talking-head video" : "a short video ad"}.
+The speech was cut from one raw recording; the cuts are at these times in the audio:
+${joins.map((j) => `J${j.n} at ${clock(j.outSec)} (${j.outSec.toFixed(2)} s)`).join("\n")}
+
+Intended script (cuts marked):
+${script2}
+
+${long ? "This is a calm long-form video. Pauses of about 400 to 600 ms between sentences, and longer ones the speaker holds on purpose, are part of the delivery: flag a pause only when it sounds like hesitation or dead air." : `This is a fast-paced social video ad. Tight pauses between sentences (about 200 to 450 ms) are a
+deliberate style, not a defect: do not flag a pause only because it is shorter than in conversation.`}
+
+For every cut, listen to about one second either side and judge whether it sounds like one natural,
+continuous delivery. Flag only defects a listener would notice:
+- the speaker's intonation before the cut says more is coming (rising or held pitch), but what follows does not continue that thought;
+- the next words start so soon that they collide with the previous ones, or a breath is audibly chopped;
+- a word or syllable is clipped at the cut;
+- a jump in loudness, energy, room sound or mood between the two sides;
+- a click or pop.
+Judge each cut on its own and describe what you actually hear at that cut (the words either side and
+the sound of the join); do not repeat a generic sentence across cuts. Mark natural=true with severity
+"none" when nothing is wrong. Then say in "overall" whether the ad, heard once, makes sense and flows,
+and in "heard" transcribe what you actually hear.`;
+}
 var LOOKING_SCHEMA = {
   type: "object",
   additionalProperties: false,
@@ -27062,6 +27118,10 @@ function shotsFromAnswer(answer, n) {
     return null;
   });
 }
+function listeningFromAnswer(answer, model2) {
+  const parsed = answer ?? {};
+  return { model: model2, joins: parsed.joins ?? [], overall: parsed.overall ?? "", heard: parsed.heard ?? "" };
+}
 
 // features/video-ads/engine/own-edit.ts
 var CAPTION_SHARE = 0.3;
@@ -27141,6 +27201,182 @@ function sourcePlan(take, own, framing, { measured = true } = {}) {
     graphics: own ? "only where it shows none" : "ours",
     why
   };
+}
+
+// features/asset-builder/adapters/openrouter/usage.ts
+var count2 = (value) => typeof value === "number" && Number.isFinite(value) ? value : null;
+var text2 = (value) => typeof value === "string" && value ? value : null;
+function usageFromBody(body, requestedModel) {
+  const usage2 = body.usage ?? {};
+  return {
+    model: text2(body.model) ?? requestedModel,
+    provider: text2(body.provider),
+    generationId: text2(body.id),
+    inputTokens: count2(usage2.prompt_tokens),
+    outputTokens: count2(usage2.completion_tokens),
+    reasoningTokens: count2(usage2.completion_tokens_details?.reasoning_tokens),
+    cachedTokens: count2(usage2.prompt_tokens_details?.cached_tokens),
+    costUsd: count2(usage2.cost)
+  };
+}
+
+// features/video-ads/server/openrouter.ts
+var videoAdModels = () => ({
+  transcribe: process.env.VIDEO_AD_TRANSCRIBE_MODEL || "elevenlabs/scribe-v2",
+  edit: process.env.VIDEO_AD_EDIT_MODEL || "anthropic/claude-opus-5.5",
+  listen: process.env.VIDEO_AD_LISTEN_MODEL || "~google/gemini-pro-latest",
+  look: process.env.VIDEO_AD_LOOK_MODEL || "~google/gemini-flash-latest"
+});
+var OPENROUTER = "https://openrouter.ai/api/v1";
+var OpenRouterRequestError = class extends Error {
+  constructor(message, status) {
+    super(message);
+    this.name = "OpenRouterRequestError";
+    this.isRetryable = status === 408 || status === 429 || status >= 500;
+  }
+};
+function headers() {
+  const key = process.env.OPENROUTER_API_KEY;
+  if (!key) throw new Error("OPENROUTER_API_KEY is not configured.");
+  return {
+    authorization: `Bearer ${key}`,
+    "content-type": "application/json",
+    "x-title": "InfoPros Video Ads",
+    ...process.env.NEXT_PUBLIC_SITE_URL ? { "http-referer": process.env.NEXT_PUBLIC_SITE_URL } : {}
+  };
+}
+async function post(path8, body, signal, timeoutMs = 18e4) {
+  const response = await fetch(`${OPENROUTER}${path8}`, {
+    method: "POST",
+    headers: headers(),
+    body: JSON.stringify(body),
+    signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(timeoutMs)]) : AbortSignal.timeout(timeoutMs)
+  });
+  if (!response.ok) {
+    throw new OpenRouterRequestError(`OpenRouter ${path8} returned ${response.status}: ${(await response.text()).slice(0, 300)}`, response.status);
+  }
+  return await response.json();
+}
+async function transcribe(mp3, signal, { speakers = false } = {}) {
+  const model2 = videoAdModels().transcribe;
+  const body = await post("/audio/transcriptions", {
+    model: model2,
+    input_audio: { data: mp3.toString("base64"), format: "mp3" },
+    response_format: "verbose_json",
+    timestamp_granularities: ["word"],
+    language: "en",
+    ...speakers && { provider: { options: { elevenlabs: { diarize: true, tag_audio_events: true } } } }
+  }, signal);
+  const raw = Array.isArray(body.words) ? body.words : [];
+  const words = raw.map((w) => ({
+    text: String(w.word ?? w.text ?? "").trim(),
+    start: Number(w.start),
+    end: Number(w.end),
+    confidence: w.confidence,
+    ...speakers && typeof w.speaker_label === "string" && { speaker: w.speaker_label }
+  })).filter((w) => w.text && Number.isFinite(w.start) && Number.isFinite(w.end) && w.end >= w.start);
+  if (!words.length) throw new OpenRouterRequestError(`Transcription by ${model2} returned no word timings.`, 422);
+  return { words, usage: usageFromBody(body, model2) };
+}
+function messageJson(body) {
+  const choices = body.choices;
+  return JSON.parse((choices?.[0]?.message?.content ?? "").replace(/^```(?:json)?\s*|\s*```$/g, ""));
+}
+async function findFaces(frames, signal) {
+  const model2 = videoAdModels().look;
+  const body = await post("/chat/completions", {
+    model: model2,
+    temperature: 0,
+    usage: { include: true },
+    messages: [{
+      role: "user",
+      content: [
+        ...frames.map((jpeg) => ({ type: "image_url", image_url: { url: `data:image/jpeg;base64,${jpeg.toString("base64")}` } })),
+        { type: "text", text: lookingPrompt(frames.length) }
+      ]
+    }],
+    response_format: { type: "json_schema", json_schema: { name: "speaker_faces", strict: true, schema: LOOKING_SCHEMA } }
+  }, signal);
+  const boxes = facesFromAnswer(messageJson(body), frames.length);
+  return { boxes, usage: usageFromBody(body, model2) };
+}
+var STILLS_PER_READ = 12;
+async function readOnScreen(frames, signal) {
+  const batches = Array.from({ length: Math.ceil(frames.length / STILLS_PER_READ) }, (_, i) => frames.slice(i * STILLS_PER_READ, (i + 1) * STILLS_PER_READ));
+  const reads = await Promise.all(batches.map((batch) => readOnScreenBatch(batch, signal)));
+  return { stills: reads.flatMap((r2) => r2.stills), usage: reads.map((r2) => r2.usage) };
+}
+async function readOnScreenBatch(frames, signal) {
+  const model2 = videoAdModels().look;
+  const body = await post("/chat/completions", {
+    model: model2,
+    temperature: 0,
+    usage: { include: true },
+    messages: [{
+      role: "user",
+      content: [
+        ...frames.map((jpeg) => ({ type: "image_url", image_url: { url: `data:image/jpeg;base64,${jpeg.toString("base64")}` } })),
+        { type: "text", text: onScreenPrompt(frames.length) }
+      ]
+    }],
+    response_format: { type: "json_schema", json_schema: { name: "on_screen_text", strict: true, schema: ON_SCREEN_SCHEMA } }
+  }, signal);
+  const stills2 = stillsFromAnswer(messageJson(body), frames.length);
+  return { stills: stills2, usage: usageFromBody(body, model2) };
+}
+async function reviewLook(frames, signal, stacked = false) {
+  const model2 = videoAdModels().look;
+  const body = await post("/chat/completions", {
+    model: model2,
+    temperature: 0,
+    usage: { include: true },
+    messages: [{
+      role: "user",
+      content: [
+        ...frames.map((jpeg) => ({ type: "image_url", image_url: { url: `data:image/jpeg;base64,${jpeg.toString("base64")}` } })),
+        { type: "text", text: lookReviewPrompt(frames.length, stacked) }
+      ]
+    }],
+    response_format: { type: "json_schema", json_schema: { name: "look_review", strict: true, schema: LOOK_REVIEW_SCHEMA } }
+  }, signal);
+  const readings = lookReadingsFromAnswer(messageJson(body), frames.length);
+  return { readings, usage: usageFromBody(body, model2) };
+}
+async function readShots(frames, signal) {
+  const model2 = videoAdModels().look;
+  const body = await post("/chat/completions", {
+    model: model2,
+    temperature: 0,
+    usage: { include: true },
+    messages: [{
+      role: "user",
+      content: [
+        ...frames.map((jpeg) => ({ type: "image_url", image_url: { url: `data:image/jpeg;base64,${jpeg.toString("base64")}` } })),
+        { type: "text", text: shotsPrompt(frames.length) }
+      ]
+    }],
+    response_format: { type: "json_schema", json_schema: { name: "shots", strict: true, schema: SHOTS_SCHEMA } }
+  }, signal);
+  const screens = shotsFromAnswer(messageJson(body), frames.length);
+  return { screens, usage: usageFromBody(body, model2) };
+}
+async function listenToCut(mp3, joins, script2, signal, long = false, seconds3 = 0) {
+  const model2 = videoAdModels().listen;
+  const body = await post("/chat/completions", {
+    model: model2,
+    temperature: 0.2,
+    usage: { include: true },
+    messages: [{
+      role: "user",
+      content: [
+        { type: "input_audio", input_audio: { data: mp3.toString("base64"), format: "mp3" } },
+        { type: "text", text: listeningPrompt(joins, script2, long) }
+      ]
+    }],
+    response_format: { type: "json_schema", json_schema: { name: "cut_review", strict: true, schema: LISTENING_SCHEMA } }
+  }, signal, 18e4 + seconds3 * 2e3);
+  const usage2 = usageFromBody(body, model2);
+  return { report: listeningFromAnswer(messageJson(body), usage2.model), usage: usage2 };
 }
 
 // features/asset-builder/capabilities/configured-funnel/schemas/common.ts
@@ -32222,145 +32458,6 @@ function changedReport(previous, finished, state, facts, listened) {
 // features/video-ads/server/look-review.ts
 import { mkdtemp, readFile as readFile2, rm } from "node:fs/promises";
 import path3 from "node:path";
-
-// features/asset-builder/adapters/openrouter/usage.ts
-var count2 = (value) => typeof value === "number" && Number.isFinite(value) ? value : null;
-var text2 = (value) => typeof value === "string" && value ? value : null;
-function usageFromBody(body, requestedModel) {
-  const usage2 = body.usage ?? {};
-  return {
-    model: text2(body.model) ?? requestedModel,
-    provider: text2(body.provider),
-    generationId: text2(body.id),
-    inputTokens: count2(usage2.prompt_tokens),
-    outputTokens: count2(usage2.completion_tokens),
-    reasoningTokens: count2(usage2.completion_tokens_details?.reasoning_tokens),
-    cachedTokens: count2(usage2.prompt_tokens_details?.cached_tokens),
-    costUsd: count2(usage2.cost)
-  };
-}
-
-// features/video-ads/server/openrouter.ts
-var videoAdModels = () => ({
-  transcribe: process.env.VIDEO_AD_TRANSCRIBE_MODEL || "elevenlabs/scribe-v2",
-  edit: process.env.VIDEO_AD_EDIT_MODEL || "anthropic/claude-opus-5.5",
-  listen: process.env.VIDEO_AD_LISTEN_MODEL || "~google/gemini-pro-latest",
-  look: process.env.VIDEO_AD_LOOK_MODEL || "~google/gemini-flash-latest"
-});
-var OPENROUTER = "https://openrouter.ai/api/v1";
-var OpenRouterRequestError = class extends Error {
-  constructor(message, status) {
-    super(message);
-    this.name = "OpenRouterRequestError";
-    this.isRetryable = status === 408 || status === 429 || status >= 500;
-  }
-};
-function headers() {
-  const key = process.env.OPENROUTER_API_KEY;
-  if (!key) throw new Error("OPENROUTER_API_KEY is not configured.");
-  return {
-    authorization: `Bearer ${key}`,
-    "content-type": "application/json",
-    "x-title": "InfoPros Video Ads",
-    ...process.env.NEXT_PUBLIC_SITE_URL ? { "http-referer": process.env.NEXT_PUBLIC_SITE_URL } : {}
-  };
-}
-async function post(path8, body, signal, timeoutMs = 18e4) {
-  const response = await fetch(`${OPENROUTER}${path8}`, {
-    method: "POST",
-    headers: headers(),
-    body: JSON.stringify(body),
-    signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(timeoutMs)]) : AbortSignal.timeout(timeoutMs)
-  });
-  if (!response.ok) {
-    throw new OpenRouterRequestError(`OpenRouter ${path8} returned ${response.status}: ${(await response.text()).slice(0, 300)}`, response.status);
-  }
-  return await response.json();
-}
-function messageJson(body) {
-  const choices = body.choices;
-  return JSON.parse((choices?.[0]?.message?.content ?? "").replace(/^```(?:json)?\s*|\s*```$/g, ""));
-}
-async function findFaces(frames, signal) {
-  const model2 = videoAdModels().look;
-  const body = await post("/chat/completions", {
-    model: model2,
-    temperature: 0,
-    usage: { include: true },
-    messages: [{
-      role: "user",
-      content: [
-        ...frames.map((jpeg) => ({ type: "image_url", image_url: { url: `data:image/jpeg;base64,${jpeg.toString("base64")}` } })),
-        { type: "text", text: lookingPrompt(frames.length) }
-      ]
-    }],
-    response_format: { type: "json_schema", json_schema: { name: "speaker_faces", strict: true, schema: LOOKING_SCHEMA } }
-  }, signal);
-  const boxes = facesFromAnswer(messageJson(body), frames.length);
-  return { boxes, usage: usageFromBody(body, model2) };
-}
-var STILLS_PER_READ = 12;
-async function readOnScreen(frames, signal) {
-  const batches = Array.from({ length: Math.ceil(frames.length / STILLS_PER_READ) }, (_, i) => frames.slice(i * STILLS_PER_READ, (i + 1) * STILLS_PER_READ));
-  const reads = await Promise.all(batches.map((batch) => readOnScreenBatch(batch, signal)));
-  return { stills: reads.flatMap((r2) => r2.stills), usage: reads.map((r2) => r2.usage) };
-}
-async function readOnScreenBatch(frames, signal) {
-  const model2 = videoAdModels().look;
-  const body = await post("/chat/completions", {
-    model: model2,
-    temperature: 0,
-    usage: { include: true },
-    messages: [{
-      role: "user",
-      content: [
-        ...frames.map((jpeg) => ({ type: "image_url", image_url: { url: `data:image/jpeg;base64,${jpeg.toString("base64")}` } })),
-        { type: "text", text: onScreenPrompt(frames.length) }
-      ]
-    }],
-    response_format: { type: "json_schema", json_schema: { name: "on_screen_text", strict: true, schema: ON_SCREEN_SCHEMA } }
-  }, signal);
-  const stills2 = stillsFromAnswer(messageJson(body), frames.length);
-  return { stills: stills2, usage: usageFromBody(body, model2) };
-}
-async function reviewLook(frames, signal, stacked = false) {
-  const model2 = videoAdModels().look;
-  const body = await post("/chat/completions", {
-    model: model2,
-    temperature: 0,
-    usage: { include: true },
-    messages: [{
-      role: "user",
-      content: [
-        ...frames.map((jpeg) => ({ type: "image_url", image_url: { url: `data:image/jpeg;base64,${jpeg.toString("base64")}` } })),
-        { type: "text", text: lookReviewPrompt(frames.length, stacked) }
-      ]
-    }],
-    response_format: { type: "json_schema", json_schema: { name: "look_review", strict: true, schema: LOOK_REVIEW_SCHEMA } }
-  }, signal);
-  const readings = lookReadingsFromAnswer(messageJson(body), frames.length);
-  return { readings, usage: usageFromBody(body, model2) };
-}
-async function readShots(frames, signal) {
-  const model2 = videoAdModels().look;
-  const body = await post("/chat/completions", {
-    model: model2,
-    temperature: 0,
-    usage: { include: true },
-    messages: [{
-      role: "user",
-      content: [
-        ...frames.map((jpeg) => ({ type: "image_url", image_url: { url: `data:image/jpeg;base64,${jpeg.toString("base64")}` } })),
-        { type: "text", text: shotsPrompt(frames.length) }
-      ]
-    }],
-    response_format: { type: "json_schema", json_schema: { name: "shots", strict: true, schema: SHOTS_SCHEMA } }
-  }, signal);
-  const screens = shotsFromAnswer(messageJson(body), frames.length);
-  return { screens, usage: usageFromBody(body, model2) };
-}
-
-// features/video-ads/server/look-review.ts
 async function look(sourceFile, edl, workDir, log, round2, signal, looks) {
   const frames = lookFrames(edl.durationInFrames, edl.fps);
   const dir = await mkdtemp(path3.join(workDir, "look-"));
@@ -32614,6 +32711,90 @@ import { createHash as createHash3 } from "node:crypto";
 import { existsSync as existsSync3, readFileSync as readFileSync2 } from "node:fs";
 import { mkdir as mkdir2, open, stat as stat2, writeFile as writeFile2 } from "node:fs/promises";
 import path5 from "node:path";
+
+// features/video-highlights/engine/chunks.ts
+var CHUNK_SECONDS = 600;
+var SEARCH = 30;
+var QUIET_WINDOW = 0.5;
+function chunkBounds(track, duration3, chunkSeconds = CHUNK_SECONDS) {
+  const bounds = [0];
+  while (duration3 - bounds[bounds.length - 1] > chunkSeconds * 1.5) {
+    const mark = bounds[bounds.length - 1] + chunkSeconds;
+    bounds.push(quietestNear(track, mark, SEARCH));
+  }
+  bounds.push(duration3);
+  return bounds;
+}
+function quietestNear(track, mark, search) {
+  const width = Math.max(1, Math.round(QUIET_WINDOW / track.step));
+  const from = Math.max(0, Math.floor((mark - search) / track.step));
+  const to = Math.min(track.db.length - width, Math.ceil((mark + search) / track.step));
+  let best = mark;
+  let quietest = Infinity;
+  for (let i = from; i <= to; i++) {
+    let sum = 0;
+    for (let j = i; j < i + width; j++) sum += track.db[j];
+    if (sum < quietest) [quietest, best] = [sum, (i + width / 2) * track.step];
+  }
+  return Math.round(best * 100) / 100;
+}
+
+// features/video-highlights/server/media.ts
+import { spawn as spawn5 } from "node:child_process";
+var LOUDNESS_RATE = 8e3;
+var LOUDNESS_STEP = 0.1;
+function ffmpeg2(args2, signal) {
+  return new Promise((resolve, reject) => {
+    const child = spawn5("ffmpeg", ["-hide_banner", "-v", "error", ...capThreads(args2)], { signal, stdio: ["ignore", "pipe", "pipe"] });
+    const out = [];
+    const err = [];
+    child.stdout.on("data", (chunk) => out.push(chunk));
+    child.stderr.on("data", (chunk) => err.push(chunk));
+    child.on("error", reject);
+    child.on("close", (code) => {
+      if (code === 0) resolve(Buffer.concat(out));
+      else reject(new Error(`ffmpeg failed (${code}): ${Buffer.concat(err).toString().slice(-500)}`));
+    });
+  });
+}
+function loudnessTrack(file2, signal) {
+  return new Promise((resolve, reject) => {
+    const args2 = capThreads(["-i", file2, "-vn", "-ac", "1", "-ar", String(LOUDNESS_RATE), "-f", "s16le", "-"]);
+    const child = spawn5("ffmpeg", ["-hide_banner", "-v", "error", ...args2], { signal, stdio: ["ignore", "pipe", "pipe"] });
+    const perStep = Math.round(LOUDNESS_RATE * LOUDNESS_STEP);
+    const db = [];
+    let sum = 0;
+    let count3 = 0;
+    let carry = null;
+    let err = "";
+    child.stdout.on("data", (chunk) => {
+      const data = carry ? Buffer.concat([carry, chunk]) : chunk;
+      const whole = data.length - data.length % 2;
+      for (let at = 0; at < whole; at += 2) {
+        const v = data.readInt16LE(at) / 32768;
+        sum += v * v;
+        if (++count3 === perStep) {
+          db.push(10 * Math.log10(sum / count3 + 1e-10));
+          sum = 0;
+          count3 = 0;
+        }
+      }
+      carry = whole < data.length ? data.subarray(whole) : null;
+    });
+    child.stderr.on("data", (chunk) => err += chunk.toString());
+    child.on("error", reject);
+    child.on("close", (code) => {
+      if (code !== 0) return reject(new Error(`ffmpeg failed (${code}): ${err.slice(-500)}`));
+      if (count3) db.push(10 * Math.log10(sum / count3 + 1e-10));
+      resolve({ step: LOUDNESS_STEP, db: Float32Array.from(db) });
+    });
+  });
+}
+function audioPiece(file2, from, to, signal) {
+  return ffmpeg2(["-ss", from.toFixed(3), "-i", file2, "-t", (to - from).toFixed(3), "-vn", "-ac", "1", "-ar", "16000", "-c:a", "libmp3lame", "-b:a", "64k", "-f", "mp3", "-"], signal);
+}
+
+// scripts/local-transcripts.ts
 var TAKE_GAP = 1.5;
 var ms = (seconds3) => Math.round(seconds3 * 1e3) / 1e3;
 var transcriptsRoot = (work) => path5.join(path5.dirname(path5.resolve(work)), "transcripts");
@@ -32711,6 +32892,27 @@ function finalTranscript(edit, origin) {
       ...origin?.[w.index] && { recording: origin[w.index].recording, recordingAt: origin[w.index].at }
     }))
   };
+}
+var PIECES_AT_ONCE = 4;
+async function transcribeWithKey(file2, signal) {
+  const { duration: duration3 } = await probeTake(file2, signal);
+  const bounds = chunkBounds(await loudnessTrack(file2, signal), duration3);
+  const pieces = new Array(bounds.length - 1);
+  let next = 0;
+  async function work() {
+    while (next < bounds.length - 1) {
+      const i = next++;
+      const mp3 = await audioPiece(file2, bounds[i], bounds[i + 1], signal);
+      try {
+        pieces[i] = (await transcribe(mp3, signal)).words.map((w) => ({ ...w, start: ms(w.start + bounds[i]), end: ms(w.end + bounds[i]) }));
+      } catch (error51) {
+        if (!(error51 instanceof Error && error51.message.includes("returned no word timings"))) throw error51;
+        pieces[i] = [];
+      }
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(PIECES_AT_ONCE, bounds.length - 1) }, work));
+  return { words: pieces.flat(), by: { by: "openrouter", model: videoAdModels().transcribe } };
 }
 
 // scripts/local-edit.ts
@@ -32944,6 +33146,7 @@ async function runEdit(work) {
     const plan = sourcePlan(take, ownEdit, framing ?? null, { measured: framed?.measured !== false });
     const takeQa = takeChecks({ width: planned.width, height: planned.height, hdr: take.hdr, faceFound: subject !== null, clippedShare: sound.clipped, noiseFloorDb: noiseFloorDb(tracks), framed: Boolean(framed), whole: plan.framing === "whole" }, style);
     let reviews = 0;
+    let listens = 0;
     const ports = {
       plan: (prompt) => log.step("plan the edit", () => asker.ask({ name: "plan", title: "Plan the edit", instructions: EDITOR_INSTRUCTIONS, prompt, schema: schemaOf(planSchemaFor(style)), read: (a) => readPlan(style, planSchemaFor(style).parse(a)) })),
       readThrough: (prompt) => log.step(`review round ${++reviews}`, () => asker.ask({ name: `review-${reviews}`, title: `Read the cut through (round ${reviews})`, instructions: READ_THROUGH_INSTRUCTIONS, prompt, schema: schemaOf(readThroughSchema), read: (a) => readThroughSchema.parse(a) })),
@@ -32952,7 +33155,7 @@ async function runEdit(work) {
         return asker.ask({ name: "visuals", title: "Map the script and plan the visuals", instructions: REEL_GRAPHICS_INSTRUCTIONS, prompt, schema: schemaOf(reelGraphicsSchemaFor(context)), images, read: (a) => reelGraphicsSchemaFor(context).parse(a) });
       }),
       graphics: (prompt) => log.step("map the script and plan the pages", () => asker.ask({ name: "graphics", title: "Map the script and plan the pages", instructions: GRAPHICS_INSTRUCTIONS, prompt, schema: schemaOf(scriptMapSchema), read: (a) => scriptMapSchema.parse(a) })),
-      listen: async () => null
+      listen: async (cut, script2) => cut.joins.length ? hearCut({ work, source, asker, log, signal, long: isLong(style) }, cut, script2, `round ${++listens}`) : null
     };
     const footage = subject ? readFootageLook(await colorFrames(source, take.duration, 10, signal), subject) : null;
     const o = job.options ?? {};
@@ -32988,7 +33191,8 @@ async function runEdit(work) {
     const { result } = looked2;
     const ads = [{ variant: MAIN_VARIANT, edl: result.edl, keptWords: result.keptWords }, ...result.variants.map((v) => ({ variant: v.id, edl: v.edl, keptWords: v.keptWords }))];
     await bandBrightCaptions(ads, source, take, log, signal);
-    const notHere = { id: "local", group: "edit", label: "Edited on this computer", status: "info", detail: "Not done here as OS does: listening to the cuts, and the Meta policy review of the script." };
+    const unheard = edited.report.rounds.length > 0 && edited.report.rounds.every((r2) => !r2.heard);
+    const notHere = { id: "local", group: "edit", label: "Edited on this computer", status: "info", detail: `Not done here as OS does: ${unheard ? "listening to the cuts (no OS and no OpenRouter key), and " : ""}the Meta policy review of the script.` };
     const qa = [...takeQa, ...dressed?.skipped.length ? [{ id: "look", group: "edit", label: "The look asked for", status: "warn", detail: `Not applied: ${dressed.skipped.join("; ")}.` }] : [], ...editChecks(result.edl, result.keptWords), ...looked2.checks, notHere];
     const edit = { ...result, source, fit, qa, version: 1, style: job.style, ...settings && { settings } };
     await keep(work, edit);
@@ -32997,6 +33201,44 @@ async function runEdit(work) {
     if (asker.pending.length) throw new NeedsAnswers(asker.pending);
     throw error51;
   }
+}
+var heardJoinSchema = external_exports.object({ join: external_exports.number().int(), natural: external_exports.boolean(), severity: external_exports.enum(["none", "minor", "major"]), issue: external_exports.string() });
+var listenAnswerSchema = external_exports.union([external_exports.null(), external_exports.object({ model: external_exports.string().optional(), joins: external_exports.array(heardJoinSchema), overall: external_exports.string(), heard: external_exports.string() })]);
+var LISTEN_INSTRUCTIONS = `Have OS listen to the cuts: call OS's listen_to_cut with file, joins, script, long and seconds exactly as below, PUT
+the MP3 at "sound" to its uploadUrl as it says, then get_listening about every 20 seconds until it is ready, and write its
+"report" as the answer, unchanged. When the OS tools aren't there, aren't signed in or fail, answer null: the edit goes
+on without listening, as OS's does when its model fails.`;
+async function hearCut(input, cut, script2, label) {
+  const { work, source, asker, log, signal, long } = input;
+  const seconds3 = Math.round(cut.totalFrames / FPS * 100) / 100;
+  const mp3 = await log.step(`stitch audio ${label}`, () => stitchedAudio(source, cut.ranges, signal));
+  if (process.env.OPENROUTER_API_KEY) {
+    return log.step(`listen ${label}`, async () => {
+      try {
+        return (await listenToCut(mp3, cut.joins, script2, signal, long, seconds3)).report;
+      } catch (error51) {
+        if (signal.aborted) throw error51;
+        console.error(`listening skipped: ${error51 instanceof Error ? error51.message.slice(0, 200) : "failed"}`);
+        return null;
+      }
+    });
+  }
+  const name = `listen-${label.replace(/\W+/g, "-")}`;
+  const sound = path6.join(work, "listen", `${name}.mp3`);
+  await mkdir3(path6.dirname(sound), { recursive: true });
+  await writeFile3(sound, mp3);
+  const request = { sound, file: { name: `${name}.mp3`, bytes: mp3.byteLength }, joins: cut.joins.map((j) => ({ n: j.n, outSec: Math.round(j.outSec * 100) / 100 })), script: script2, long, seconds: seconds3 };
+  return log.step(`listen ${label}`, () => asker.ask({
+    name,
+    title: `Have OS listen to the cuts (${label})`,
+    instructions: LISTEN_INSTRUCTIONS,
+    prompt: JSON.stringify(request, null, 1),
+    schema: schemaOf(listenAnswerSchema),
+    read: (a) => {
+      const answer = listenAnswerSchema.parse(a);
+      return answer && listeningFromAnswer(answer, answer.model ?? "os");
+    }
+  }));
 }
 async function keep(work, edit) {
   await mkdir3(path6.join(work, "versions"), { recursive: true });
@@ -33042,7 +33284,19 @@ async function changeEdit(work, request, details = {}) {
     const take = await probeTake(current.source, signal);
     await bandBrightCaptions(ads, current.source, take, log, signal);
     const skippedQa = applied.skipped.length ? [{ id: "change-skipped", group: "edit", label: "Not changed", status: "info", detail: `Left as it was: ${applied.skipped.join("; ")}.` }] : [];
-    const report = changedReport(current.report, finished, applied.state, facts, null);
+    const known = new Set(before.joins.map(joinKey));
+    const fresh = applied.cutChanged ? finished.cut.joins.filter((j) => !known.has(joinKey(j))) : [];
+    let listened = null;
+    const cutQa = [];
+    if (fresh.length) {
+      const heard = await hearCut({ work, source: current.source, asker, log, signal, long: isLong(state.style) }, finished.cut, scriptOf(finished.cut, finished.take.phrases), `v${current.version + 1}`);
+      if (heard) {
+        const bad = heard.joins.filter((h) => !h.natural && h.severity === "major" && fresh.some((j) => j.n === h.join));
+        listened = { joins: finished.cut.joins, heard, review: { makesSense: bad.length === 0, problems: [], restorePhraseIds: [], dropPhraseIds: [], joinPauses: [], beatRewrites: [], dropBeatIndexes: [], dropKeyIdeaIndexes: [], hookText: "", ctaText: "", captionBreaksAfter: [] } };
+        cutQa.push({ id: "change-cuts", group: "edit", label: "New cuts", status: bad.length ? "warn" : "pass", detail: bad.length ? `A new cut may sound wrong: ${bad.map((b) => b.issue).join("; ")}` : "The new cuts sound natural." });
+      }
+    }
+    const report = changedReport(current.report, finished, applied.state, facts, listened);
     const edit = {
       ...current,
       edl: finished.main.edl,
@@ -33050,7 +33304,7 @@ async function changeEdit(work, request, details = {}) {
       state: applied.state,
       report,
       variants: finished.variants.made.map((m) => ({ id: m.variant.id, edl: m.finished.edl, keptWords: m.finished.cut.words })),
-      qa: [...current.qa.filter((c2) => c2.group === "take"), ...editChecks(finished.main.edl, finished.cut.words), ...skippedQa],
+      qa: [...current.qa.filter((c2) => c2.group === "take"), ...editChecks(finished.main.edl, finished.cut.words), ...cutQa, ...skippedQa],
       version: current.version + 1
     };
     await keep(work, edit);
@@ -33099,7 +33353,7 @@ function summaryOf(edit) {
 }
 function run4(command2, args2) {
   return new Promise((resolve, reject) => {
-    const child = spawn5(command2, args2, { stdio: ["ignore", "ignore", "pipe"] });
+    const child = spawn6(command2, args2, { stdio: ["ignore", "ignore", "pipe"] });
     let err = "";
     child.stderr.on("data", (d) => err += d.toString());
     child.on("error", reject);
@@ -33112,6 +33366,8 @@ var here = path7.dirname(fileURLToPath(import.meta.url));
 if (existsSync5(path7.join(here, "composition", "index.html"))) process.env.VIDEO_AD_COMPOSITION_DIR ||= path7.join(here, "composition");
 var installed = path7.basename(path7.dirname(here)) === "render-kit";
 var KIT_HOME = installed ? path7.dirname(path7.dirname(here)) : path7.join(homedir2(), ".infopros");
+var KEY_FILE = path7.join(KIT_HOME, "openrouter.key");
+if (!process.env.OPENROUTER_API_KEY && existsSync5(KEY_FILE)) process.env.OPENROUTER_API_KEY = readFileSync4(KEY_FILE, "utf8").trim();
 if (installed) {
   const tmp = path7.join(KIT_HOME, "tmp");
   mkdirSync2(tmp, { recursive: true });
@@ -33129,7 +33385,7 @@ var MODEL_SHA256 = "88d4531297118f595bf2fd60f6f566aec2e559393802d1f436c380f0cbbd
 var CUTOUT_PACKAGES = ["onnxruntime>=1.23.2,<2", "numpy>=2.3.4,<3"];
 function run5(command2, args2, missing = "Install ffmpeg first.") {
   return new Promise((resolve, reject) => {
-    const child = spawn6(command2, args2, { stdio: ["ignore", "pipe", "pipe"] });
+    const child = spawn7(command2, args2, { stdio: ["ignore", "pipe", "pipe"] });
     const out = [];
     const err = [];
     child.stdout.on("data", (chunk) => out.push(chunk));
@@ -33199,35 +33455,44 @@ async function render(work, out) {
 }
 var WHISPER_HOME = path7.join(KIT_HOME, "whisper");
 var whisperPython = () => process.platform === "win32" ? path7.join(WHISPER_HOME, "Scripts", "python.exe") : path7.join(WHISPER_HOME, "bin", "python");
-async function transcribeHere(work, size2, language) {
+async function transcribeHere(work, size2, language, whisper) {
   const job = JSON.parse(await readFile4(path7.join(work, "job.json"), "utf8"));
   const root = transcriptsRoot(work);
   const needed = [];
   for (const part of partsOf(job)) if (!needed.includes(part.file) && !await savedRecording(root, part.file)) needed.push(part.file);
-  const needPython = "Install Python 3.10 or later first.";
-  if (needed.length && !existsSync5(whisperPython())) {
-    await mkdir4(path7.dirname(WHISPER_HOME), { recursive: true });
-    if (process.platform === "win32") await run5("py", ["-3", "-m", "venv", WHISPER_HOME], needPython);
-    else await run5("python3", ["-m", "venv", WHISPER_HOME], needPython);
-  }
-  if (needed.length) await run5(whisperPython(), ["-m", "pip", "install", "--quiet", "--disable-pip-version-check", "--only-binary=:all:", "faster-whisper>=1.1,<2"], needPython);
+  const withKey = !whisper && Boolean(process.env.OPENROUTER_API_KEY);
+  if (needed.length && !withKey) await setupWhisper();
   for (const recording of needed) {
-    const pcm = await decodeAnalysisPcm(recording);
-    const audio = path7.join(work, "sound.f32");
-    const out = path7.join(work, "cache", "whisper-words.json");
-    await mkdir4(path7.dirname(out), { recursive: true });
-    await writeFile4(audio, new Uint8Array(pcm.buffer, pcm.byteOffset, pcm.byteLength));
-    try {
-      process.stdout.write(await run5(whisperPython(), [path7.join(here, "whisper", "transcribe.py"), audio, out, size2, language], needPython));
-      const folder = await saveRecording(root, recording, wordsFrom(JSON.parse(await readFile4(out, "utf8"))), { by: "whisper", model: size2 });
-      console.error(`saved: ${folder}`);
-    } finally {
-      await rm3(audio, { force: true });
-      await rm3(out, { force: true });
-    }
+    const { words, by: by2 } = withKey ? await transcribeWithKey(recording) : await whisperWords(work, recording, size2, language);
+    console.error(`saved: ${await saveRecording(root, recording, words, by2)}`);
   }
   if (!await wordsFromSaved(work, job)) throw new Error("No words were heard in this take.");
-  console.log(JSON.stringify({ transcribed: needed.length, fromSaved: partsOf(job).length - needed.length, words: JSON.parse(await readFile4(path7.join(work, "words.json"), "utf8")).length }));
+  let by = "saved";
+  if (needed.length) by = withKey ? "openrouter" : "whisper";
+  console.log(JSON.stringify({ transcribed: needed.length, by, fromSaved: partsOf(job).length - needed.length, words: JSON.parse(await readFile4(path7.join(work, "words.json"), "utf8")).length }));
+}
+var NEED_PYTHON = "Install Python 3.10 or later first.";
+async function setupWhisper() {
+  if (!existsSync5(whisperPython())) {
+    await mkdir4(path7.dirname(WHISPER_HOME), { recursive: true });
+    if (process.platform === "win32") await run5("py", ["-3", "-m", "venv", WHISPER_HOME], NEED_PYTHON);
+    else await run5("python3", ["-m", "venv", WHISPER_HOME], NEED_PYTHON);
+  }
+  await run5(whisperPython(), ["-m", "pip", "install", "--quiet", "--disable-pip-version-check", "--only-binary=:all:", "faster-whisper>=1.1,<2"], NEED_PYTHON);
+}
+async function whisperWords(work, recording, size2, language) {
+  const pcm = await decodeAnalysisPcm(recording);
+  const audio = path7.join(work, "sound.f32");
+  const out = path7.join(work, "cache", "whisper-words.json");
+  await mkdir4(path7.dirname(out), { recursive: true });
+  await writeFile4(audio, new Uint8Array(pcm.buffer, pcm.byteOffset, pcm.byteLength));
+  try {
+    process.stdout.write(await run5(whisperPython(), [path7.join(here, "whisper", "transcribe.py"), audio, out, size2, language], NEED_PYTHON));
+    return { words: wordsFrom(JSON.parse(await readFile4(out, "utf8"))), by: { by: "whisper", model: size2 } };
+  } finally {
+    await rm3(audio, { force: true });
+    await rm3(out, { force: true });
+  }
 }
 function option(args2, name) {
   const at = args2.indexOf(name);
@@ -33355,7 +33620,7 @@ try {
   } else if (command === "transcribe" && args[0]) {
     const size2 = option(args, "--model") ?? "base";
     const language = option(args, "--language") ?? "";
-    await transcribeHere(args[0], size2, language);
+    await transcribeHere(args[0], size2, language, flag(args, "--whisper"));
   } else if (command === "import-transcript" && args[0] && args[1]) console.log(JSON.stringify(await importTranscript(args[0], args[1])));
   else if (command === "edit" && args[0]) {
     if (flag(args, "--fresh")) await rm3(path7.join(args[0], "cache"), { recursive: true, force: true });
