@@ -3434,6 +3434,20 @@ const CAPTION_LOOKS = {
     highlights: false,
     pop: "#ffffff",
     width: 760
+  },
+  // The negative of the picture behind each letter: white text in the difference blend, heavy so the inversion reads.
+  inverted: {
+    font: reelsFont,
+    weight: 900,
+    size: 76,
+    tracking: "-0.02em",
+    lineHeight: 1.04,
+    textCase: "upper",
+    color: "#ffffff",
+    highlights: false,
+    pop: "#ffffff",
+    width: 860,
+    blend: "difference"
   }
 };
 
@@ -3841,7 +3855,10 @@ function StyledCaption({ page, look, brand, onPage, ms, line, scale, textCase, a
         letterSpacing: look.tracking,
         lineHeight: look.lineHeight,
         color: overUi ? UI_INK : onLight && brand ? brand.kit.colors.text : look.color,
-        textShadow: onLight || lineBox ? void 0 : withHalo(look.shadow, Boolean(page.band))
+        // Inverted text needs no halo: it is always the opposite of what is behind it. Over a page or an interface
+        // it is drawn plainly, as the inversion of a flat card would be one flat color.
+        textShadow: onLight || lineBox || look.blend ? void 0 : withHalo(look.shadow, Boolean(page.band)),
+        mixBlendMode: look.blend && !onPage && !overUi ? look.blend : void 0
       },
       children: /* @__PURE__ */ (0,jsx_runtime.jsx)("span", { style: lineBox, children: parts })
     }

@@ -7370,36 +7370,10 @@ var require_dist = __commonJS({
 import { spawn as spawn6 } from "node:child_process";
 import { createHash as createHash4 } from "node:crypto";
 import { existsSync as existsSync4, mkdirSync as mkdirSync2 } from "node:fs";
-import { copyFile as copyFile2, mkdir as mkdir3, mkdtemp as mkdtemp3, readdir, readFile as readFile4, rm as rm3, stat as stat2, writeFile as writeFile3 } from "node:fs/promises";
+import { copyFile as copyFile2, mkdir as mkdir3, mkdtemp as mkdtemp3, readdir, readFile as readFile4, rm as rm3, writeFile as writeFile3 } from "node:fs/promises";
 import { homedir as homedir2 } from "node:os";
 import path6 from "node:path";
 import { fileURLToPath } from "node:url";
-
-// features/video-ads/engine/proxy.ts
-var TAG = "infopros-original=";
-var PROXY_SHORT_SIDE = 720;
-function proxyComment(original) {
-  return `${TAG}${Math.round(original.width)}x${Math.round(original.height)}`;
-}
-function originalSizeOf(comment) {
-  const found = comment?.match(/infopros-original=(\d{2,5})x(\d{2,5})/);
-  if (!found) return null;
-  const width = Number(found[1]);
-  const height = Number(found[2]);
-  return width > 0 && height > 0 ? { width, height } : null;
-}
-function proxySize(original, shortSide = PROXY_SHORT_SIDE) {
-  const short = Math.min(original.width, original.height);
-  const scale = short > shortSide ? shortSide / short : 1;
-  const even2 = (n) => Math.max(2, Math.round(n * scale / 2) * 2);
-  return { width: even2(original.width), height: even2(original.height) };
-}
-function plannedSize(take) {
-  const original = take.original;
-  if (!original || take.width <= 0 || take.height <= 0) return { width: take.width, height: take.height };
-  const sameShape = Math.abs(original.width / original.height - take.width / take.height) < 0.02;
-  return sameShape && original.width >= take.width ? original : { width: take.width, height: take.height };
-}
 
 // features/video-ads/engine/long-slop.ts
 var LONG_SLOP = [
@@ -8060,8 +8034,8 @@ function behindSourceWindows(ads, pad = 6) {
   return joined2;
 }
 function effectsWithoutRoom(subject, safe) {
-  const probe2 = (kind) => ({ kind, text: kind === "word" ? "FREE" : "", others: kind === "tier" ? ["S", "A", "B"] : [] });
-  return EFFECT_KINDS.filter((kind) => !effectLayout(probe2(kind), subject, safe));
+  const probe = (kind) => ({ kind, text: kind === "word" ? "FREE" : "", others: kind === "tier" ? ["S", "A", "B"] : [] });
+  return EFFECT_KINDS.filter((kind) => !effectLayout(probe(kind), subject, safe));
 }
 
 // features/video-ads/server/audio.ts
@@ -8275,7 +8249,7 @@ function ffmpeg(args2, signal) {
 }
 async function probeTake(file2, signal) {
   const output = await new Promise((resolve, reject) => {
-    const child = spawn("ffprobe", ["-v", "error", "-show_entries", "format=duration:format_tags=comment:stream=codec_type,width,height,color_transfer:stream_side_data=rotation", "-of", "json", file2], { signal });
+    const child = spawn("ffprobe", ["-v", "error", "-show_entries", "format=duration:stream=codec_type,width,height,color_transfer:stream_side_data=rotation", "-of", "json", file2], { signal });
     let text3 = "";
     child.stdout.on("data", (chunk) => text3 += chunk.toString());
     child.on("error", reject);
@@ -8289,8 +8263,7 @@ async function probeTake(file2, signal) {
     width: (sideways ? video?.height : video?.width) ?? 0,
     height: (sideways ? video?.width : video?.height) ?? 0,
     hasAudio: Boolean(parsed.streams?.some((s) => s.codec_type === "audio")),
-    hdr: video?.color_transfer === "arib-std-b67" || video?.color_transfer === "smpte2084",
-    original: originalSizeOf(parsed.format?.tags?.comment)
+    hdr: video?.color_transfer === "arib-std-b67" || video?.color_transfer === "smpte2084"
   };
 }
 async function decodeAnalysisPcm(file2, signal) {
@@ -9178,6 +9151,7 @@ function editChecks(edl, keptWords) {
     if (edl.mutes.length) checks.push(check("edit", "swears", "No swearing", "warn", `${edl.mutes.length} swear${edl.mutes.length === 1 ? " is" : "s are"} muted and left out of the captions.`));
     return checks;
   }
+  if (edl.unshown) checks.push(check("edit", "key-moments", "Key moments shown", edl.unshown.length ? "warn" : "pass", edl.unshown.length ? `Nothing shows: ${edl.unshown.join("; ")}.` : "Every must-see moment has a visual."));
   const outside = [];
   for (const platform of PLATFORMS) {
     const safe = SAFE_AREAS[platform];
@@ -9255,9 +9229,9 @@ function run2(command2, args2, signal) {
   });
 }
 async function measureRender(platform, file2, bytes, signal) {
-  const probe2 = JSON.parse((await run2("ffprobe", ["-v", "error", "-show_entries", "format=duration:stream=codec_type,codec_name,width,height,r_frame_rate,pix_fmt,sample_rate", "-of", "json", file2], signal)).stdout);
-  const video = probe2.streams?.find((s) => s.codec_type === "video");
-  const audio = probe2.streams?.find((s) => s.codec_type === "audio");
+  const probe = JSON.parse((await run2("ffprobe", ["-v", "error", "-show_entries", "format=duration:stream=codec_type,codec_name,width,height,r_frame_rate,pix_fmt,sample_rate", "-of", "json", file2], signal)).stdout);
+  const video = probe.streams?.find((s) => s.codec_type === "video");
+  const audio = probe.streams?.find((s) => s.codec_type === "audio");
   const [num3, den] = (video?.r_frame_rate ?? "0/1").split("/").map(Number);
   const { stderr } = await run2("ffmpeg", ["-hide_banner", "-nostats", "-i", file2, "-af", "ebur128=peak=true", "-f", "null", "-"], signal);
   const summary = stderr.slice(stderr.lastIndexOf("Summary:"));
@@ -9271,7 +9245,7 @@ async function measureRender(platform, file2, bytes, signal) {
     audioCodec: audio?.codec_name ?? "none",
     sampleRate: Number(audio?.sample_rate ?? 0),
     editLists: editListCount(bytes),
-    durationSec: Number(probe2.format?.duration ?? 0),
+    durationSec: Number(probe.format?.duration ?? 0),
     integratedLufs: Number(summary.match(/I:\s*(-?[\d.]+) LUFS/)?.[1] ?? NaN),
     truePeakDb: Number(summary.match(/Peak:\s*(-?[\d.]+) dBFS/)?.[1] ?? NaN)
   };
@@ -9559,6 +9533,37 @@ var RunLog = class {
     }
   }
 };
+
+// features/video-ads/engine/reel-settings.ts
+var REEL_COLORS = ["brand", "custom", "footage"];
+var REEL_ENERGIES = ["natural", "brisk"];
+var REEL_CAPTIONS = ["simple", "bold", "box", "inverted", "stacked"];
+var REEL_VISUALS = ["none", "light", "standard", "rich"];
+var DEFAULT_REEL_SETTINGS = { colors: "brand", energy: "natural", captions: "simple", visuals: "standard" };
+var STYLE_PRESETS = {
+  simple: { colors: "footage", energy: "natural", captions: "simple", visuals: "standard" },
+  fun: { colors: "brand", energy: "natural", captions: "simple", visuals: "standard" },
+  cinematic: { colors: "brand", energy: "brisk", captions: "simple", visuals: "rich" },
+  // Two-tier captions carry the screen: a stacked reel shows nothing else, whatever its visuals say.
+  stacked: { colors: "brand", energy: "brisk", captions: "stacked", visuals: "none" }
+};
+var CAPTION_STYLE_OF = { simple: "reels", bold: "condensed", box: "box", inverted: "inverted" };
+function resolveReelSettings(settings) {
+  const stacked = settings.captions === "stacked";
+  let style = "fun";
+  if (stacked) style = "stacked";
+  else if (settings.visuals === "rich") style = "cinematic";
+  const visuals = settings.visuals === "none" || settings.visuals === "light" ? settings.visuals : void 0;
+  const choices = {
+    pace: settings.energy === "brisk" ? "brisk" : "calm",
+    sounds: settings.energy === "brisk",
+    ...!stacked && { captionStyle: CAPTION_STYLE_OF[settings.captions] },
+    ...settings.colors === "footage" && { palette: "footage" },
+    ...settings.colors === "custom" && settings.customColors && { colors: settings.customColors }
+  };
+  return { style, options: { ...visuals && { visuals } }, choices };
+}
+var isReelPreset = (style) => style in STYLE_PRESETS;
 
 // scripts/local-edit.ts
 import { spawn as spawn5 } from "node:child_process";
@@ -24082,7 +24087,7 @@ function date4(params) {
 config(en_default());
 
 // features/video-ads/engine/caption-styles.ts
-var CAPTION_STYLES = ["reels", "condensed", "box"];
+var CAPTION_STYLES = ["reels", "condensed", "box", "inverted"];
 var DEFAULT_CAPTION_STYLE = "reels";
 var CAPTION_STYLE_RULES = {
   reels: {
@@ -24090,21 +24095,32 @@ var CAPTION_STYLE_RULES = {
     about: `Instagram's own default captions (the "None" style in the Reels editor and Edits): white bold sans as said, with its punctuation, a thin dark edge, no box or highlight, a short phrase on one line. Native and calm; the default for any ad.`,
     maxWords: 5,
     maxChars: 26,
-    punctuation: true
+    punctuation: true,
+    highlights: false
   },
   condensed: {
     label: "Instagram condensed",
     about: "Instagram's condensed preset: tall narrow capitals in white, the word being said in yellow (or the brand color), a phrase on two lines. Punchy but still native; for hooks, lists and fast talkers.",
     maxWords: 6,
     maxChars: 30,
-    punctuation: false
+    punctuation: false,
+    highlights: true
   },
   box: {
     label: "Boxed",
     about: "White text on a dark rounded box behind each line, as TikTok's background text. Reads on the busiest footage; for bright or cluttered takes.",
     maxWords: 5,
     maxChars: 28,
-    punctuation: false
+    punctuation: false,
+    highlights: false
+  },
+  inverted: {
+    label: "Inverted",
+    about: "Bold capitals drawn as the negative of the video behind them, letter by letter: dark over a light wall or shirt, light over a dark one, changing as the picture moves. No outline or box. Striking and graphic; for takes whose background is light in places and dark in others.",
+    maxWords: 4,
+    maxChars: 24,
+    punctuation: false,
+    highlights: false
   }
 };
 
@@ -24937,7 +24953,7 @@ function readTake(facts, wordFixes = []) {
   for (const phrase of phrases) phrase.text = words.slice(phrase.firstWord, phrase.lastWord + 1).map((w) => w.text).join(" ");
   return { words, phrases, prosody: prosodyFrom(facts.tracks), snappedWordEdges: snapped.snapped };
 }
-function styleContext(style, options2, brand, revision = null, subject) {
+function styleContext(style, options2, brand, revision = null, subject, captionStyle) {
   const room = subject !== void 0 && effectsOn(style, options2) ? effectsWithoutRoom(subject, SAFE_AREAS.meta) : [];
   return {
     style: editLook(style),
@@ -24952,11 +24968,14 @@ function styleContext(style, options2, brand, revision = null, subject) {
     ...effectsOn(style, options2) && { effects: true },
     ...style === "cinematic" && { cinematic: true },
     ...style === "stacked" && { stacked: true },
-    ...room.length && { noRoom: room }
+    ...room.length && { noRoom: room },
+    ...options2.visuals && !isLong(style) && { visuals: options2.visuals },
+    // Highlights only where the captions draw them; an edit with no caption style (made before them) keeps them.
+    ...captionStyle && !CAPTION_STYLE_RULES[captionStyle].highlights && { captionHighlights: false }
   };
 }
 function effectsOn(style, options2) {
-  return !isLong(style) && style !== "stacked" && (options2.effects ?? style === "cinematic");
+  return !isLong(style) && style !== "stacked" && !options2.visuals && (options2.effects ?? style === "cinematic");
 }
 var titleCase = (text3) => text3.trim().replace(new RegExp("(^|\\s)(\\p{Ll})", "gu"), (_, space, letter) => space + letter.toUpperCase());
 var sameText = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase();
@@ -24986,7 +25005,8 @@ function dressFor(facts, state) {
   const marked = facts.own?.look?.highlight;
   const own = facts.footage ? { name: "", colors: { ...facts.footage.colors, ...marked && { accent: marked } }, font: null, images: [] } : null;
   let base = null;
-  if (isBranded(state.style) || isLong(state.style)) base = facts.brand;
+  if (state.choices.palette === "footage" && !isLong(state.style)) base = own;
+  else if (isBranded(state.style) || isLong(state.style)) base = facts.brand;
   else if (state.style === "simple") base = own;
   const colors = Object.fromEntries(Object.entries(state.choices.colors ?? {}).filter(([, value]) => typeof value === "string" && value));
   if (!Object.keys(colors).length) return base;
@@ -25123,7 +25143,9 @@ function finishCut(facts, state, cut, hookLine, opening) {
     ...facts.framing && { framing: facts.framing },
     ...own && { own },
     ...facts.captionless?.length && { captionless: facts.captionless },
-    ...soundsOf(state.style, choices) && { sfx: planSounds({ tracks: facts.tracks, motion, transitions, beats: shown, cardFrom: cta?.card?.fromFrame ?? null, totalFrames: cut.totalFrames }) }
+    ...soundsOf(state.style, choices) && { sfx: planSounds({ tracks: facts.tracks, motion, transitions, beats: shown, cardFrom: cta?.card?.fromFrame ?? null, totalFrames: cut.totalFrames }) },
+    // With its visuals planned from a map of its script, the must-see moments nothing shows (qa.ts "Key moments shown").
+    ...state.map && { unshown: unshownInReel(state.map, state, shown, punchIns ? keyIdeas : [], cut.words) }
   };
   return { edl, cut, reSplitRuns, droppedBeats: timed.filter((_, i) => !fits[i]) };
 }
@@ -25204,7 +25226,7 @@ function calmLayouts(pages) {
     page.scene = scene;
   }
 }
-function unshownSections(map2, pages, words) {
+function unshownSections(map2, shown, words, marked = /* @__PURE__ */ new Set()) {
   const startOf = (index) => words.find((w) => w.index >= index);
   const endOf = (index) => [...words].reverse().find((w) => w.index <= index);
   return map2.sections.filter((s) => {
@@ -25213,8 +25235,20 @@ function unshownSections(map2, pages, words) {
     if (s.importance < 3 || !first || !last || last.endMs <= first.startMs) return false;
     const from = Math.round(first.startMs / 1e3 * FPS);
     const to = Math.round(last.endMs / 1e3 * FPS);
-    return !pages.some((p4) => p4.fromFrame < to && p4.fromFrame + (p4.wordsFrames ?? p4.durationInFrames) > from);
+    if ([...marked].some((i) => i >= s.fromWordIndex && i <= s.toWordIndex)) return false;
+    const enough = Math.min(FPS, (to - from) / 2);
+    return !shown.some((p4) => Math.min(to, p4.fromFrame + (p4.wordsFrames ?? p4.durationInFrames)) - Math.max(from, p4.fromFrame) >= enough);
   }).map((s) => s.title);
+}
+function unshownInReel(map2, state, shown, keyIdeas, words) {
+  const marked = /* @__PURE__ */ new Set();
+  const mark = (from, to) => {
+    for (let i = from; i <= to; i++) marked.add(i);
+  };
+  for (const h of state.plan.highlights) mark(h.fromWordIndex, h.toWordIndex);
+  for (const k4 of state.plan.keyPhrases ?? []) mark(k4.fromWordIndex, k4.toWordIndex);
+  const sections = map2.sections.filter((s) => s.role !== "hook" && s.role !== "cta");
+  return unshownSections({ sections }, [...shown, ...keyIdeas], words, marked);
 }
 function hookCandidate(index, v, keep2, main, phrases) {
   const text3 = v.hookText.trim();
@@ -25588,11 +25622,23 @@ function effectMode(context) {
   if (!context.effects) return "none";
   return context.cinematic ? "often" : "moments";
 }
+var NO_VISUALS_RULES = `Graphics: none. This reel shows its captions and hook only: plan no beats, except a comment box when the
+speaker says to comment a word: kind comment, text = that exact word, title = the account handle from the offer
+context (or empty), app "messages", the other fields empty, role offer and fit 3.`;
+var LIGHT_RULES = `The look is light: the speaker stays the star, and every graphic earns its place by showing exactly what they
+are saying, typed over the video. No cards, full-screen pages or effects: only these kinds. ${PHONE_RULES}`;
+var NO_HIGHLIGHTS = "Highlights: none; these captions draw no highlights, so leave highlights empty.";
 var beatRules = (context) => {
   if (isLong(context.style)) return LONG_BEAT_RULES;
   if (context.stacked) return STACKED_RULES;
+  if (context.visuals === "none") return `${NO_VISUALS_RULES}
+${context.captionHighlights === false ? NO_HIGHLIGHTS : ""}`;
+  if (context.visuals === "light") return `${LIGHT_RULES}
+${context.captionHighlights === false ? NO_HIGHLIGHTS : ""}`;
   if (!isBranded(context.style)) return SIMPLE_RULES;
-  return brandRules(context.brand, context.style === "fun", context.fullScreenScenes ?? true, context.activeWord === true, effectMode(context), context.noRoom ?? []);
+  const rules = brandRules(context.brand, context.style === "fun", context.fullScreenScenes ?? true, context.activeWord === true, effectMode(context), context.noRoom ?? []);
+  return context.captionHighlights === false ? `${rules.slice(0, rules.lastIndexOf("Highlights:")).trimEnd()}
+${NO_HIGHLIGHTS}` : rules;
 };
 var hookUse = (context) => context.style === "fun" && context.hookText !== false ? "shown as text from the first frame" : "which name the line in the report and are not shown on screen";
 function ownEditNote(own, phrases) {
@@ -25612,9 +25658,11 @@ fewer graphics than for raw footage, only where they add something its own edit 
 repeats words, numbers or points its own edit already puts on screen.
 `;
 }
+var REEL_NO_BEATS = "Graphics: none here. The visuals (graphics, effects, highlights, key ideas, key phrases) are planned once the cut is final, from its script: leave beats, highlights, keyIdeas and keyPhrases empty.";
 function editPlanPrompt(input) {
   const ending = (p4) => `${boundaryOf(p4)}, pitch ${input.prosody.contour(p4.start, p4.end).label}`;
   const long = isLong(input.style.style);
+  const later = !long && input.visualsLater === true;
   return `${long ? "You are the editor of a 16:9 talking-head video of any length for a sales, welcome or thank-you page." : "You are the editor of a vertical talking-head video for Instagram Reels and TikTok, run as an ad."}
 The footage is one presenter talking to camera. Between lines the presenter may hold a resting pose,
 and sometimes abandons a take and restarts it. Below is the transcript split into phrases
@@ -25661,10 +25709,10 @@ Decide:
    context to show under it, or empty. Never invent one: if the speaker never says one, set wordIndex to -1
    and both texts empty, and the take needs a reshoot.
 ${variantRules(input.style)}
-10. ${input.style.stacked ? "keyIdeas: none in this style." : keyIdeaRule(input.style)}
-11. ${keyPhraseRule(input.style)}
+10. ${later ? "keyIdeas: []." : input.style.stacked ? "keyIdeas: none in this style." : keyIdeaRule(input.style)}
+11. ${later ? "keyPhrases: []." : keyPhraseRule(input.style)}
 
-${isLong(input.style.style) ? LONG_NO_BEATS : beatRules(input.style)}
+${isLong(input.style.style) ? LONG_NO_BEATS : later ? REEL_NO_BEATS : beatRules(input.style)}
 
 PHRASES
 ${input.phrases.map((p4) => `${p4.id} [${p4.start.toFixed(2)}-${p4.end.toFixed(2)}] (ends: ${ending(p4)}) ${p4.text}`).join("\n")}
@@ -26236,7 +26284,10 @@ function applyChange(facts, before, take, change) {
   if (change.style && change.style !== state.style) {
     if (isLong(change.style) !== isLong(state.style)) skipped.push(isLong(change.style) ? "turning a reel into a long video needs a re-edit in the long video style" : "turning a long video into a reel needs a re-edit in a reel style");
     else if (change.style === "stacked" && !state.plan.keyPhrases?.length) skipped.push("switching to the stacked style needs a re-edit in it, which picks its key phrases");
-    else state.style = change.style;
+    else {
+      state.style = change.style;
+      delete state.choices.palette;
+    }
   }
   if (change.fullScreenScenes !== null) state.options.fullScreenScenes = change.fullScreenScenes;
   const brandImages = isBranded(state.style) ? facts.brand?.images.length ?? 0 : 0;
@@ -26353,10 +26404,87 @@ var noChange = () => ({
   fullScreenScenes: null
 });
 
+// features/video-ads/engine/reel-map.ts
+var REEL_SECTION_ROLES = ["hook", "problem", "story", "contrast", "number", "steps", "action", "proof", "offer", "punch", "cta", "talk"];
+var reelSectionsSchema = external_exports.array(external_exports.object({
+  id: external_exports.number().int(),
+  fromWordIndex: external_exports.number().int(),
+  toWordIndex: external_exports.number().int(),
+  role: external_exports.enum(REEL_SECTION_ROLES),
+  title: external_exports.string(),
+  importance: external_exports.number().int(),
+  named: external_exports.array(external_exports.object({ wordIndex: external_exports.number().int(), text: external_exports.string() }))
+}));
+function reelGraphicsSchemaFor(context) {
+  const visuals = { sections: reelSectionsSchema, beats: editPlanSchema.shape.beats };
+  return context.stacked ? external_exports.object({ ...visuals, keyPhrases: keyPhrasesSchema }) : external_exports.object({ ...visuals, highlights: editPlanSchema.shape.highlights, keyIdeas: editPlanSchema.shape.keyIdeas });
+}
+var REEL_GRAPHICS_INSTRUCTIONS = "You plan the on-screen visuals of a vertical talking-head ad from its script. Answer only through the structured output.";
+var SHOWS = `number: stat, graph, chart, shoulders; contrast: compare, split, tier, shoulders; steps: list, tier,
+   screen; action: screen, split, notify; offer: notify, moment, image; proof: stat, graph, phone; punch: word,
+   moment; story: phone, notify; problem: notify, moment`;
+var REEL_GRAPHICS_RULES = `You plan the visuals of a vertical talking-head ad (a reel) from its finished script. Work in two steps, in this order.
+
+1. sections: map the whole script, in order, into sections that together cover every word, each one idea:
+   fromWordIndex and toWordIndex (inclusive), role, title (what it is about, up to 6 words), importance and named.
+   roles: hook (the opening line), problem (the pain or the situation the viewer is in), story (an example, a moment),
+   contrast (two sides: before and after, them and us, the old way and the new), number (a figure that carries the
+   point), steps (a sequence or the parts of something, walked through), action (something to do on a phone or a
+   screen), proof (a result or evidence), offer (what is sold or given: its name, price, date or bonus), punch (the
+   line that lands the point), cta (the call to action), talk (connecting talk).
+   importance: 3 = the viewer must take it in or the ad loses its point (the problem, every contrast, number and set
+   of steps, the offer, the line that lands it), 2 = helps, 1 = plain talk. A reel of 30 to 40 seconds usually has
+   three to six sections of importance 3.
+   named: what a viewer would want to read, each with the wordIndex where it is said and its text as said, lightly
+   trimmed: a number, each item of a list or a sequence, each side of a contrast, a name.
+
+2. the visuals, from that map, with the style's palette and limits below. Use the palette: the kinds it allows that
+   fit the moments, not one kind over and over.
+   - Every section of importance 3 gets a visual, except the opening line while the hook text shows and the call to
+     action, where the rules below allow none: the kind that shows its role best, from those the style allows
+     (${SHOWS}); where none fits, a highlight, a key idea or a key phrase, as the style uses them.
+   - Importance 2 takes a lighter touch (a highlight, a key phrase, a short typed line) when there is room; importance 1
+     nothing. Talking with nothing on screen is part of the rhythm.
+   - A visual sits inside its section: anchorWordIndex on the word that names it, untilWordIndex the first word after
+     what it shows, lineWordIndexes from named, so each part appears as it is said.
+   - Never the same big kind twice in a row; one visual at a time; role = its section's role where the rules list it
+     (else story or punch, as it does), fit honest, since code keeps the best-fitting within the ad's attention budget.`;
+function reelGraphicsPrompt(input) {
+  const seconds3 = input.words.length ? input.words[input.words.length - 1].endMs / 1e3 : 0;
+  return `${REEL_GRAPHICS_RULES}
+
+THE STYLE'S PALETTE AND LIMITS
+${beatRules(input.context)}
+${keyIdeaRule(input.context)}
+${keyPhraseRule(input.context)}
+
+WHAT THE AD IS FOR
+${input.brief.trim() || "(no notes: take it from the script)"}
+${input.hookWordIndex >= 0 ? `The ad opens on word ${input.hookWordIndex}${input.hookText ? `, with the hook text "${input.hookText}"` : ""}.` : ""}
+${input.ctaWordIndex >= 0 ? `The call to action starts at word ${input.ctaWordIndex}.` : "The speaker says no call to action."}
+
+THE SCRIPT AS IT PLAYS (${Math.round(seconds3)} seconds; each line starts with its time, then each word's index and text)
+${timedScript(input.words)}`;
+}
+function readReelMap(answer, words) {
+  const indexes = new Set(words.map((w) => w.index));
+  const first = words[0]?.index ?? 0;
+  const last = words.at(-1)?.index ?? -1;
+  const sections = answer.sections.filter((s) => s.fromWordIndex <= s.toWordIndex && s.toWordIndex >= first && s.fromWordIndex <= last).map((s) => ({ ...s, title: s.title.trim(), importance: Math.min(3, Math.max(1, s.importance)) })).sort((a, b) => a.fromWordIndex - b.fromWordIndex);
+  const beats = answer.beats.filter((b) => indexes.has(b.anchorWordIndex)).sort((a, b) => a.anchorWordIndex - b.anchorWordIndex);
+  const visuals = "keyPhrases" in answer ? { beats, highlights: [], keyIdeas: [], keyPhrases: answer.keyPhrases } : { beats, highlights: answer.highlights, keyIdeas: answer.keyIdeas, keyPhrases: [] };
+  return { map: { sections }, visuals };
+}
+
 // features/video-ads/engine/edit.ts
 var MAX_READ_THROUGHS = 2;
 var MIN_PAUSE_MS = 150;
 var MAX_PAUSE_MS = 800;
+function allowedByVisuals(visuals, kind) {
+  if (visuals === "none") return kind === "comment";
+  if (visuals === "light") return SIMPLE_BEAT_KINDS.includes(kind);
+  return true;
+}
 function cleanPlan(plan, phrases, words, context) {
   const phraseIds = new Set(phrases.map((p4) => p4.id));
   const inWords = (i) => Number.isInteger(i) && i >= 0 && i < words.length;
@@ -26369,11 +26497,12 @@ function cleanPlan(plan, phrases, words, context) {
     // Only fun shows a list; the simple style draws phone interfaces only.
     // A long video plans only pages, each with a complete scene; no reel shows a long video's graphics.
     // A stacked edit shows nothing but its captions, apart from a comment box for a comment call to action.
-    beats: plan.beats.map((b) => b.kind === "page" ? { ...b, scene: sceneOf(b.scene, b.lines.length) } : b).filter((b) => inWords(b.anchorWordIndex) && (context.stacked ? b.kind === "comment" : isLong(context.style) ? LONG_PLANNED_KINDS.includes(b.kind) : !LONG_BEAT_KINDS.includes(b.kind) && !RETIRED_BEAT_KINDS.includes(b.kind) && (context.style === "fun" || !FUN_ONLY_BEAT_KINDS.includes(b.kind)) && (isBranded(context.style) || SIMPLE_BEAT_KINDS.includes(b.kind)) && // Effects only where the edit has them, each with what it needs to be drawn; such an edit has no scene cards.
+    // A reel set to show nothing but its captions keeps only a comment box; one set to light keeps typed lines, a stat or a comment box.
+    beats: plan.beats.map((b) => b.kind === "page" ? { ...b, scene: sceneOf(b.scene, b.lines.length) } : b).filter((b) => inWords(b.anchorWordIndex) && allowedByVisuals(context.visuals, b.kind) && (context.stacked ? b.kind === "comment" : isLong(context.style) ? LONG_PLANNED_KINDS.includes(b.kind) : !LONG_BEAT_KINDS.includes(b.kind) && !RETIRED_BEAT_KINDS.includes(b.kind) && (context.style === "fun" || !FUN_ONLY_BEAT_KINDS.includes(b.kind)) && (isBranded(context.style) || SIMPLE_BEAT_KINDS.includes(b.kind)) && // Effects only where the edit has them, each with what it needs to be drawn; such an edit has no scene cards.
     (EFFECT_KINDS.includes(b.kind) ? context.effects === true && effectComplete(b) : !(context.effects && !context.fullScreenScenes && SCENE_KINDS.includes(b.kind))) && (b.kind !== "image" || context.brand?.images[b.values[0] ?? -1] !== void 0))),
     // With the word being said in the highlight color, a planned color or pill would repeat it; the display font
     // and drawn marks still show.
-    highlights: isBranded(context.style) && !context.stacked ? plan.highlights.filter((h) => inWords(h.fromWordIndex) && h.toWordIndex >= h.fromWordIndex && h.toWordIndex - h.fromWordIndex < 3 && (!context.activeWord || h.kind !== "color" && h.kind !== "pill")) : [],
+    highlights: isBranded(context.style) && !context.stacked && context.captionHighlights !== false ? plan.highlights.filter((h) => inWords(h.fromWordIndex) && h.toWordIndex >= h.fromWordIndex && h.toWordIndex - h.fromWordIndex < 3 && (!context.activeWord || h.kind !== "color" && h.kind !== "pill")) : [],
     hook: { ...plan.hook, promise: context.style === "fun" && context.extendedHook && context.hookText !== false ? plan.hook.promise.trim() : "" },
     keyIdeas: context.style === "fun" && context.punchIns ? plan.keyIdeas.filter((k4) => inWords(k4.wordIndex) && k4.text.trim() && k4.text.trim().length <= KEY_IDEA_MAX_CHARS).slice(0, MAX_KEY_IDEAS) : [],
     // The stacked style's key phrases, each over words said one after the other; finishing lays them out.
@@ -26398,11 +26527,13 @@ async function editTake(input, ports) {
   const read = readTake(facts);
   if (!read.phrases.length) throw new Error("The take has no recognisable speech.");
   const style = input.style ?? "simple";
-  const options2 = { variants: !isLong(style) && (input.variants ?? false), fullScreenScenes: input.fullScreenScenes ?? true, hookText: input.hookText ?? true, extendedHook: input.extendedHook ?? false, punchIns: input.punchIns ?? false, activeWord: input.activeWord ?? true, ...!isLong(style) && { effects: true } };
-  const context = styleContext(style, options2, input.brand ?? null, input.revision?.trim() || null, input.subject ?? null);
+  const options2 = { variants: !isLong(style) && (input.variants ?? false), fullScreenScenes: input.fullScreenScenes ?? true, hookText: input.hookText ?? true, extendedHook: input.extendedHook ?? false, punchIns: input.punchIns ?? false, activeWord: input.activeWord ?? true, ...!isLong(style) && { effects: true }, ...!isLong(style) && input.visuals && { visuals: input.visuals } };
+  const choices = isLong(style) ? {} : { captionStyle: DEFAULT_CAPTION_STYLE, ...input.choices };
+  const context = styleContext(style, options2, input.brand ?? null, input.revision?.trim() || null, input.subject ?? null, choices.captionStyle ?? null);
   await ports.progress?.("planning");
-  const prompt = editPlanPrompt({ brief: input.brief, phrases: read.phrases, words: read.words, prosody: read.prosody, style: context, ownEdit: input.ownEdit });
-  const plan = cleanPlan(await ports.plan(prompt), read.phrases, read.words, context);
+  const visualsLater = !isLong(style) && ports.reelGraphics !== void 0;
+  const prompt = editPlanPrompt({ brief: input.brief, phrases: read.phrases, words: read.words, prosody: read.prosody, style: context, ownEdit: input.ownEdit, visualsLater });
+  let plan = cleanPlan(await ports.plan(prompt), read.phrases, read.words, context);
   if (!plan.keepPhraseIds.length) throw new Error("The editor kept no speech from this take.");
   const { words, phrases, prosody } = readTake(facts, plan.wordFixes);
   let keep2 = plan.keepPhraseIds;
@@ -26420,7 +26551,7 @@ async function editTake(input, ports) {
     prosody,
     keep: new Set(keep2),
     pauseAfter,
-    pace: paceOf(style)
+    pace: paceOf(style, choices)
   });
   for (let round2 = 1; round2 <= MAX_READ_THROUGHS; round2++) {
     const cut2 = cutFor();
@@ -26462,6 +26593,14 @@ async function editTake(input, ports) {
     const planned = readScriptMap(await ports.graphics(graphicsPrompt({ brief: input.brief, words: final.words, ctaWordIndex: plan.cta.wordIndex })), final.words);
     beats = planned.pages;
     map2 = planned.map;
+  } else if (visualsLater && ports.reelGraphics) {
+    const final = cutFor();
+    const asked = reelGraphicsPrompt({ brief: input.brief, words: final.words, context, hookWordIndex: plan.hook.wordIndex, hookText, ctaWordIndex: plan.cta.wordIndex });
+    const planned = readReelMap(await ports.reelGraphics(asked, context), final.words);
+    plan = cleanPlan({ ...plan, ...planned.visuals }, phrases, words, context);
+    beats = plan.beats;
+    plannedKeyIdeas = plan.keyIdeas;
+    map2 = planned.map;
   }
   const state = {
     version: 1,
@@ -26477,8 +26616,7 @@ async function editTake(input, ports) {
     ctaText,
     variantPicks: [],
     ...map2 && { map: map2 },
-    // A new reel starts captioned in the Instagram Reels style; a long video keeps its own captions.
-    choices: isLong(style) ? {} : { captionStyle: DEFAULT_CAPTION_STYLE }
+    choices
   };
   const take = { words, phrases, prosody, snappedWordEdges: read.snappedWordEdges };
   const cut = cutFor();
@@ -32404,6 +32542,10 @@ async function readWebsite(link2, signal) {
 }
 
 // scripts/local-edit.ts
+function settingsOf(job) {
+  if (isLong(job.style)) return null;
+  return { ...isReelPreset(job.style) ? STYLE_PRESETS[job.style] : DEFAULT_REEL_SETTINGS, ...job.settings };
+}
 var NeedsAnswers = class extends Error {
   constructor(asks) {
     super(`${asks.length} question${asks.length === 1 ? "" : "s"} to answer`);
@@ -32537,10 +32679,14 @@ async function cached2(file2, make) {
   await writeFile2(file2, JSON.stringify(value));
   return value;
 }
+var styleOf = (job) => {
+  const settings = settingsOf(job);
+  return settings ? resolveReelSettings(settings).style : job.style;
+};
 async function prepare2(work, job, log, signal) {
   const f3 = files(work);
   const probed = await log.step("probe take", () => probeTake(job.original, signal));
-  const fit = await cached2(f3.take, async () => probed.hdr ? null : planFit(probed, pictureInBars(await detectPicture(job.original, probed.duration, signal), probed), job.style));
+  const fit = await cached2(f3.take, async () => probed.hdr ? null : planFit(probed, pictureInBars(await detectPicture(job.original, probed.duration, signal), probed), styleOf(job)));
   if (!fit) return { source: job.original, take: probed, fit: null };
   if (!existsSync3(f3.fitted)) {
     await log.step("fit the take", async () => {
@@ -32565,6 +32711,9 @@ async function runEdit(work) {
   if (!existsSync3(f3.job)) throw new Error(`No edit was started in ${work}. Run start first.`);
   if (!existsSync3(f3.words)) throw new Error(`There is no transcript in ${work} yet: get one (OS's transcribe tool, then import-transcript, or transcribe here) first.`);
   const job = readJson(f3.job);
+  const settings = settingsOf(job);
+  const resolved = settings ? resolveReelSettings(settings) : null;
+  const style = resolved?.style ?? job.style;
   const asker = new FileAsker(work);
   const { signal } = asker.controller;
   const log = runLog(work);
@@ -32579,21 +32728,22 @@ async function runEdit(work) {
     });
     const { tracks } = sound;
     const looked = await cached2(f3.looked, () => lookAtTake(source, take, log, signal, looks));
-    const framed = isLong(job.style) ? null : await cached2(f3.framing, () => measureFraming(source, take, log, signal, looks));
+    const framed = isLong(style) ? null : await cached2(f3.framing, () => measureFraming(source, take, log, signal, looks));
     const look2 = await lookFor(work, job, asker, signal);
-    const brand = job.brand && (isBranded(job.style) || isLong(job.style)) ? readJson(job.brand) : null;
+    const brand = job.brand && (isBranded(style) || isLong(style)) ? readJson(job.brand) : null;
     const brief = [job.notes ? `Notes for this ad: ${job.notes}` : "", lookBrief(look2)].filter(Boolean).join("\n");
     const subject = framed?.subject ?? looked.subject;
     const ownEdit = await log.step("check for an earlier edit", async () => ownEditFrom(looked.onScreen, words, take, { framed: Boolean(framed) }));
-    const planned = plannedSize(take);
+    const planned = { width: take.width, height: take.height };
     const framing = framed ? ownEdit ? fitWhole(framed.framing) : framed.framing : void 0;
     const placed = framing?.shots.every((s) => s.layout === "fit") ? subjectAt(framing, 0, null) : subject;
     const plan = sourcePlan(take, ownEdit, framing ?? null, { measured: framed?.measured !== false });
-    const takeQa = takeChecks({ width: planned.width, height: planned.height, hdr: take.hdr, faceFound: subject !== null, clippedShare: sound.clipped, noiseFloorDb: noiseFloorDb(tracks), framed: Boolean(framed), whole: plan.framing === "whole" }, job.style);
+    const takeQa = takeChecks({ width: planned.width, height: planned.height, hdr: take.hdr, faceFound: subject !== null, clippedShare: sound.clipped, noiseFloorDb: noiseFloorDb(tracks), framed: Boolean(framed), whole: plan.framing === "whole" }, style);
     let reviews = 0;
     const ports = {
-      plan: (prompt) => log.step("plan the edit", () => asker.ask({ name: "plan", title: "Plan the edit", instructions: EDITOR_INSTRUCTIONS, prompt, schema: schemaOf(planSchemaFor(job.style)), read: (a) => readPlan(job.style, planSchemaFor(job.style).parse(a)) })),
+      plan: (prompt) => log.step("plan the edit", () => asker.ask({ name: "plan", title: "Plan the edit", instructions: EDITOR_INSTRUCTIONS, prompt, schema: schemaOf(planSchemaFor(style)), read: (a) => readPlan(style, planSchemaFor(style).parse(a)) })),
       readThrough: (prompt) => log.step(`review round ${++reviews}`, () => asker.ask({ name: `review-${reviews}`, title: `Read the cut through (round ${reviews})`, instructions: READ_THROUGH_INSTRUCTIONS, prompt, schema: schemaOf(readThroughSchema), read: (a) => readThroughSchema.parse(a) })),
+      reelGraphics: (prompt, context) => log.step("map the script and plan the visuals", () => asker.ask({ name: "visuals", title: "Map the script and plan the visuals", instructions: REEL_GRAPHICS_INSTRUCTIONS, prompt, schema: schemaOf(reelGraphicsSchemaFor(context)), read: (a) => reelGraphicsSchemaFor(context).parse(a) })),
       graphics: (prompt) => log.step("map the script and plan the pages", () => asker.ask({ name: "graphics", title: "Map the script and plan the pages", instructions: GRAPHICS_INSTRUCTIONS, prompt, schema: schemaOf(scriptMapSchema), read: (a) => scriptMapSchema.parse(a) })),
       listen: async () => null
     };
@@ -32606,10 +32756,11 @@ async function runEdit(work) {
       tracks,
       duration: take.duration,
       subject: placed,
-      zoomLimit: zoomLimit(planned, frameOf(job.style)),
+      zoomLimit: zoomLimit(planned, frameOf(style)),
       size: planned,
       variants: job.variants ?? false,
-      style: job.style,
+      style,
+      ...resolved && { choices: resolved.choices, visuals: resolved.options.visuals },
       fullScreenScenes: o.fullScreenScenes ?? true,
       hookText: o.hookText ?? true,
       extendedHook: o.extendedHook ?? false,
@@ -32632,7 +32783,7 @@ async function runEdit(work) {
     await bandBrightCaptions(ads, source, take, log, signal);
     const notHere = { id: "local", group: "edit", label: "Edited on this computer", status: "info", detail: "Not done here as OS does: listening to the cuts, and the Meta policy review of the script." };
     const qa = [...takeQa, ...dressed?.skipped.length ? [{ id: "look", group: "edit", label: "The look asked for", status: "warn", detail: `Not applied: ${dressed.skipped.join("; ")}.` }] : [], ...editChecks(result.edl, result.keptWords), ...looked2.checks, notHere];
-    const edit = { ...result, source, fit, qa, version: 1, style: job.style };
+    const edit = { ...result, source, fit, qa, version: 1, style: job.style, ...settings && { settings } };
     await keep(work, edit);
     return edit;
   } catch (error51) {
@@ -32725,6 +32876,7 @@ function summaryOf(edit) {
   return {
     version: edit.version,
     style: edit.style,
+    ...edit.settings && { settings: edit.settings },
     seconds: Math.round(edl.durationInFrames / edl.fps * 10) / 10,
     sourceSeconds: Math.round(report.sourceSeconds * 10) / 10,
     script: report.script,
@@ -32775,48 +32927,6 @@ function run5(command2, args2, missing = "Install ffmpeg first.") {
     child.on("close", (code) => code === 0 ? resolve(Buffer.concat(out).toString()) : reject(new Error(`${command2} failed (${code}): ${Buffer.concat(err).toString().slice(-500)}`)));
   });
 }
-async function probe(file2) {
-  const parsed = JSON.parse(await run5("ffprobe", ["-v", "error", "-show_entries", "stream=codec_type,codec_name,width,height:stream_side_data=rotation", "-of", "json", file2]));
-  const video = parsed.streams?.find((s) => s.codec_type === "video");
-  if (!video?.width || !video.height) throw new Error(`${file2} has no video.`);
-  const sideways = Math.abs(video.side_data_list?.find((d) => d.rotation !== void 0)?.rotation ?? 0) % 180 === 90;
-  const audio = parsed.streams?.find((s) => s.codec_type === "audio");
-  return { width: sideways ? video.height : video.width, height: sideways ? video.width : video.height, audio: audio?.codec_name ?? null };
-}
-async function makeProxy(original, out) {
-  const facts = await probe(original);
-  const size2 = proxySize(facts);
-  const audio = facts.audio === null ? [] : facts.audio === "aac" ? ["-c:a", "copy"] : ["-c:a", "aac", "-b:a", "192k"];
-  await run5("ffmpeg", [
-    "-hide_banner",
-    "-v",
-    "error",
-    "-y",
-    "-i",
-    original,
-    "-map",
-    "0:v:0",
-    "-map",
-    "0:a:0?",
-    "-vf",
-    `scale=${size2.width}:${size2.height}`,
-    "-c:v",
-    "libx264",
-    "-preset",
-    "veryfast",
-    "-crf",
-    "23",
-    "-pix_fmt",
-    "yuv420p",
-    ...audio,
-    "-movflags",
-    "+faststart",
-    "-metadata",
-    `comment=${proxyComment(facts)}`,
-    out
-  ]);
-  console.log(JSON.stringify({ proxy: out, name: path6.basename(out), bytes: (await stat2(out)).size, original: { width: facts.width, height: facts.height }, size: size2 }));
-}
 var sha256 = (bytes) => createHash4("sha256").update(bytes).digest("hex");
 async function setupCutout() {
   const needPython = "Install Python 3.10 or later first.";
@@ -32837,23 +32947,11 @@ async function setupCutout() {
   }
   console.log(JSON.stringify({ cutout: "ready", python: cutoutPython(), model: file2 }));
 }
-async function ownVersion() {
-  const file2 = path6.join(here, "version.json");
-  return existsSync4(file2) ? JSON.parse(await readFile4(file2, "utf8")).version ?? null : null;
-}
-async function readEdit(from) {
-  const text3 = /^https?:\/\//.test(from) ? await (await fetch(from).then((r2) => r2.ok ? r2 : Promise.reject(new Error(`The edit could not be downloaded (${r2.status}). Ask for a fresh link.`)))).text() : await readFile4(from, "utf8");
-  const parsed = JSON.parse(text3);
-  return "edl" in parsed ? parsed : { edl: parsed };
-}
-async function render(from, original, out) {
-  const edit = await readEdit(from);
-  const own = await ownVersion();
-  if (edit.kitVersion && own && edit.kitVersion !== own) {
-    throw new Error(`This edit is for render kit ${edit.kitVersion}, and this computer's kit is ${own}. Update the InfoPros plugin (its local-editing skill carries the kit), install the kit again, then render again.`);
-  }
+async function render(work, out) {
+  const edit = JSON.parse(await readFile4(path6.join(work, "edit.json"), "utf8"));
+  const original = edit.source;
   const needsCutout = behindSourceWindows([edit.edl]).length > 0;
-  const platforms = edit.platforms?.length ? edit.platforms : ["meta"];
+  const platforms = ["meta"];
   await mkdir3(path6.dirname(out), { recursive: true });
   const workDir = await mkdtemp3(path6.join(path6.dirname(out), ".infopros-render-"));
   const started = Date.now();
@@ -32939,6 +33037,33 @@ async function stills(work, at, guides) {
   await run5("ffmpeg", ["-v", "error", "-y", ...files2.flatMap((f3) => ["-i", f3]), "-filter_complex", `${tiles.join(";")}${stack}`, "-frames:v", "1", "-q:v", "3", sheet]);
   console.log(JSON.stringify({ stills: files2, sheet }));
 }
+function reelSettingsFrom(args2) {
+  const one = (name, allowed) => {
+    const value = option(args2, name);
+    if (value === void 0) return void 0;
+    if (!allowed.includes(value)) throw new Error(`${name} must be one of ${allowed.join(", ")}.`);
+    return value;
+  };
+  const colors = one("--colors", REEL_COLORS);
+  const energy = one("--energy", REEL_ENERGIES);
+  const captions = one("--captions", REEL_CAPTIONS);
+  const visuals = one("--visuals", REEL_VISUALS);
+  const customColors = {};
+  for (const pair of options(args2, "--color")) {
+    const [name, value] = pair.split("=");
+    if (!["page", "surface", "text", "muted", "primary", "onPrimary", "accent", "onAccent"].includes(name) || !/^#[0-9a-f]{6}$/i.test(value ?? "")) throw new Error(`--color takes a name (accent, primary, page, surface, text...) and a #rrggbb color, as accent=#ff5a36; not ${pair}.`);
+    customColors[name] = value;
+  }
+  const custom2 = Object.keys(customColors).length;
+  return {
+    ...colors && { colors },
+    ...!colors && custom2 && { colors: "custom" },
+    ...energy && { energy },
+    ...captions && { captions },
+    ...visuals && { visuals },
+    ...custom2 && { customColors }
+  };
+}
 async function answering(step) {
   try {
     console.log(JSON.stringify(await step()));
@@ -32969,16 +33094,13 @@ if (installed) {
   }
   process.chdir(here);
 }
-var usage = "usage: node render.mjs proxy <original> [<proxy.mp4>] | setup-cutout | render <edl.json|URL|work> [<original>] [<out.mp4>] | start <original> <work> --style <style> [--notes <text|file>] [--brand <file>] [--look-website <url>] [--look-screenshot <file>]... [--look-request <words>] [--variants] | transcribe <work> [--model base] [--language en] | import-transcript <work> <file|URL> | edit <work> [--fresh] | change <work> <request> [--at <s>] [--screenshot <file>]... | stills <work> [--at 1.5,8] [--guides]";
+var usage = "usage: node render.mjs start <original> <work> [--style <style>] [settings and notes, see above] | transcribe <work> | import-transcript <work> <file|URL> | edit <work> [--fresh] | change <work> <request> [--at <s>] [--screenshot <file>]... | stills <work> [--at 1.5,8] [--guides] | render <work> [<out.mp4>] | setup-cutout";
 try {
-  if (command === "proxy" && args[0]) await makeProxy(args[0], args[1] ?? args[0].replace(/(\.[^./\\]+)?$/, "-proxy.mp4"));
-  else if (command === "setup-cutout") await setupCutout();
+  if (command === "setup-cutout") await setupCutout();
   else if (command === "render" && args[0] && existsSync4(path6.join(args[0], "edit.json"))) {
     const edit = JSON.parse(await readFile4(path6.join(args[0], "edit.json"), "utf8"));
-    const out = args[1] ?? path6.join(args[0], `${path6.basename(args[0])}-v${edit.version}.mp4`);
-    await render(path6.join(args[0], "edit.json"), edit.source, out);
-  } else if (command === "render" && args[0] && args[1]) await render(args[0], args[1], args[2] ?? args[1].replace(/(\.[^./\\]+)?$/, "-reel.mp4"));
-  else if (command === "start" && args[0] && args[1]) {
+    await render(args[0], args[1] ?? path6.join(args[0], `${path6.basename(args[0])}-v${edit.version}.mp4`));
+  } else if (command === "start" && args[0] && args[1]) {
     const style = option(args, "--style") ?? "cinematic";
     const notes = option(args, "--notes") ?? "";
     const brand = option(args, "--brand");
@@ -32986,13 +33108,20 @@ try {
     const request = option(args, "--look-request");
     const screenshots = options(args, "--look-screenshot").map((f3) => path6.resolve(f3));
     const variants = flag(args, "--variants");
+    const punchIns = flag(args, "--punch-ins");
+    const activeWord = flag(args, "--active-word");
+    const extendedHook = flag(args, "--extended-hook");
+    const settings = reelSettingsFrom(args);
+    if (style === "long" && Object.keys(settings).length) throw new Error("--colors, --energy, --captions, --visuals and --color are for reels; a long video has its own look.");
     const look2 = website || request || screenshots.length ? { ...website && { website }, ...request && { request }, ...screenshots.length && { screenshots } } : void 0;
     console.log(JSON.stringify(await startEdit(args[0], args[1], {
       style,
       notes: notes && existsSync4(notes) ? await readFile4(notes, "utf8") : notes,
       ...brand && { brand: path6.resolve(brand) },
       ...look2 && { look: look2 },
-      variants
+      variants,
+      options: { punchIns, activeWord, extendedHook },
+      ...Object.keys(settings).length && { settings }
     })));
   } else if (command === "transcribe" && args[0]) {
     const size2 = option(args, "--model") ?? "base";

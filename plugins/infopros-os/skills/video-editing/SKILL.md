@@ -27,7 +27,7 @@ Call a short-form one a reel and a long-form one a video. The same tools do both
   2. Upload each with `curl --fail -X PUT -H "Content-Type: <contentType>" -T "<path>" "<uploadUrl>"`. Each edit starts by itself once its file arrives.
   3. **Blocked** (curl can't reach `mcp.infopros.app`, or a proxy refuses it): ask once, in one line: "I can't send files from this chat. Allow `mcp.infopros.app` in Settings > Capabilities and I'll retry, or do it on your computer?" Add `start_upload`'s link as a third way.
      - **On their computer** is the Code tab of the Claude app (Mac or Windows). Give the exact message to paste there, e.g. `Edit talk.mp4 from my Downloads folder into a reel` (or `into a long-form video`).
-  4. **On their computer, when our server can't take the file** (too large, too slow, blocked) or they ask for it, edit it locally: the local-editing skill.
+  4. **On their computer, when our server can't take the file** (too large, too slow, blocked) or they ask for it, edit it entirely there: the local-reels or local-long-form skill. Never upload a smaller copy instead: a video is edited all in OS or all on their computer.
 - **Files you can't reach:** `start_upload` gives a link they open in their browser.
 - **Drive link:** `import_from_drive`.
 - **A long video they want cut into several reels** (not edited whole): find its highlights first with the video-highlights skill, then `make_reels`.
