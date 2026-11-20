@@ -41,7 +41,7 @@ If it fails, send exactly this (one message):
      - **macOS:** `brew install yt-dlp ffmpeg node`. With no Homebrew, ask them to paste the install line from brew.sh into Terminal (it asks for their Mac password), then continue.
      - **Windows:** `winget install -e --id yt-dlp.yt-dlp` (brings ffmpeg and Deno) and `winget install -e --id OpenJS.NodeJS.LTS`. Open a new terminal after.
      - **Linux:** the system's packages, or the yt-dlp release binary.
-3. **Local editing kit:** the kit comes with the local-editing skill, in its `kit` folder. Read its `version.json` and, if `.infopros/render-kit/<version>` is missing in the current folder, install it as the local-reels skill's step 2 says, so the first local edit starts at once. It installs into `.infopros/`, so it runs inside a sandbox (Claude Code's, or Codex); approve `registry.npmjs.org` when asked.
+3. **Local editing kit:** the kit comes with the local-editing skill, in its `kit` folder. Read its `version.json` and, if `.infopros/render-kit/<version>` is missing in the current folder, install it as the local-editing skill's step 2 says, so the first local edit starts at once. It installs into `.infopros/`, so it runs inside a sandbox (Claude Code's, or Codex); approve `registry.npmjs.org` when asked.
 
 ## 4. On a phone
 

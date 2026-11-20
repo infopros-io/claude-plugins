@@ -1,57 +1,64 @@
 ---
 name: local-reels
-description: Edit a talking-head take into a short-form reel (9:16, for ads and Reels) entirely on the person's computer, with you as the editor and the InfoPros OS editor's own code, set by four settings (colors, energy, captions, visuals) or a style name as a shortcut. Nothing goes up but the take's sound for the transcript, and not even that when OS can't be reached. Use when they ask to edit a reel locally, on their computer, or without uploading the video, in Claude Code, the Code tab in Claude Desktop, or Codex. Long-form videos edited locally use their own skill.
+description: Edit a talking-head take into a 9:16 reel (an ad, Reels, TikTok) entirely on the person's computer with InfoPros OS's editing code, set by four settings or a style name. Use when they ask to edit a reel locally, on their computer or without uploading it, or have no InfoPros OS access, in Claude Code, the Code tab in Claude Desktop, or Codex.
 ---
 
 # Reels on their computer
 
-Remote first: when the original can go up and they didn't ask for local, edit it in OS (the video-editing skill). Use this when they ask for local, or the upload can't work.
+Run the SOP in `../local-editing/SKILL.md`. This file holds what's specific to a reel; step numbers refer to the SOP.
 
-Talk to them in one short line at a time: what you need from them, or what's done. No explanations.
+## Start flags (step 4)
 
-**Everything stays in the current folder:** the kit and all it installs and downloads (Python environments, models, caches, temporary files) go in `.infopros/`, and each edit and its render in `infopros-edits/`. So the kit works inside an assistant's sandbox (Claude Code with its sandbox on, Codex), which lets commands write only in the project folder. What a sandbox still asks about is the downloads, the first time on a computer: `registry.npmjs.org` (Remotion), `remotion.media`, `storage.googleapis.com` and `playwright.azureedge.net` (its headless browser, about 100 MB), `pypi.org` and `files.pythonhosted.org` (Python packages), `huggingface.co` and its file hosts (the speech model), and `github.com` with `objects.githubusercontent.com` (the cutout model). Approve them when asked, or run that one command outside the sandbox if they can't be approved. Rendering also serves the original to the browser on a local address. If the folder is a git repository, add `.infopros/` and `infopros-edits/` to `.git/info/exclude` first.
+With no flags you get the house default: the hook highlighted (dark type on a white box), simple captions, nothing else on screen, and a light camera.
 
-## When the recordings aren't one ad per video
+| Setting | Values (default first) |
+|---|---|
+| `--colors` | `brand` (their design system or the look they show), `custom` (with `--color accent=#rrggbb`, also `primary`, `page`, `surface`, `text`, `onAccent`, `onPrimary`), `footage` |
+| `--energy` | `light` (a small zoom only on a long still stretch, none when the speaker is close), `natural` (calm reframes), `brisk` (tight cuts, punches, quiet sound effects) |
+| `--captions` | `simple` (Instagram's own), `bold` (condensed capitals, the spoken word in the accent), `box` (white on dark, for busy footage), `inverted` (the negative of the picture), `stacked` (two tiers, no graphics) |
+| `--visuals` | `none` (captions and hook; text at spots in the air only when the speaker clearly points at them), `light` (typed lines, a stat, a comment box), `standard` (cards and effects where the ad turns), `rich` (effects wherever a line fits) |
 
-Ads often come as one long recording holding every ad and its retakes, or with one ad's takes spread across several videos. Work out the ads before editing:
+- **Style names** set all four, and any flag can override one:
 
-1. **Transcribe every recording** (step 4 of the steps below, in its own work folder per recording, `infopros-edits/raw-<name>`). Each recording's transcript is kept, split into takes at its pauses, in `infopros-edits/transcripts/<recording>-<id>/` (`words.json`, `takes.json`, `about.json`).
-2. **Map the ads from the transcripts:** each ad is the script it says, start to finish. In one long recording, find where each ad starts and ends (a new hook, a pause, "take two", the same lines again for a retake). Across videos, put together the parts that continue each other, in the order they're said; a retake of the same lines belongs to the same ad. Write which ad each take is into `"ad"` in its recording's `takes.json` (the ad's name, or `"unused"` for a take you leave out), so a later request can pick up a take left out without transcribing again.
-3. **When something doesn't fit** (a part that matches no ad, an order you can't tell, an ad that seems to be missing lines), ask in one line for the ad scripts, and map against them.
-4. **Say the plan in one line per ad** ("Ad 1: talk.mp4 from 0:12 to 0:58"), then make each ad's take as below.
+  | Style | Colors | Energy | Captions | Visuals |
+  |---|---|---|---|---|
+  | `--style cinematic` | brand | brisk | simple | rich |
+  | `--style fun` | brand | natural | simple | standard |
+  | `--style simple` | footage | natural | simple | standard |
+  | `--style stacked` | brand | brisk | stacked | none |
 
-## Several reels at once
+  Fun's extras are `--punch-ins`, `--active-word` (with bold captions) and `--extended-hook`.
+- **Their look:** `--brand <brand.json>` (OS's brand kit shape), `--look-website <url>`, `--look-screenshot <file>`, `--look-request "<words>"`.
+- **`--notes "<what they told you>"`:** the offer, who it's for, what to keep or cut. Never invent any of it.
 
-When there are two or more reels to edit and you can start subagents (Claude Code's Agent tool, or your client's equivalent), edit them in parallel:
+## Transcript (step 5)
 
-1. **Do the shared work yourself first, once:** the tools and the kit (steps 1 and 2), the speaker cutout's setup when it's needed (`setup-cutout`), and, when the recordings aren't one reel each, the mapping of the reels above, with the take for each. When OS can't transcribe, start each reel's work folder and transcribe it on this computer yourself too, one after another (step 4; the first run sets up the speech model, which two at once would fight over); then each subagent's `start` finds its words in the saved transcripts and skips the transcript. Every recording is transcribed once, whoever edits from it.
-2. **Start one subagent per reel**, all at once. Tell each one: follow this skill (the local-reels skill) from the start step for this one reel; its original or `--part` list, its work folder (`infopros-edits/<name>`, its own), the settings and notes; the kit is already installed at `.infopros/render-kit/<v>`, so skip steps 1 and 2; answer every question the edit asks itself, by its rules; get the transcript as the skill says; check the stills; render; and report back the file, its length, the hook, the call to action and any check that warns.
-3. **Rendering is heavy:** each render uses about half the computer's cores, so at most two render at the same time. Tell the subagents to edit freely but take turns rendering: render only when fewer than two `render.mjs render` are running (check the running processes), else wait a minute and check again.
-4. **When they report back,** tell the person in one line per reel: `Done: <file>`, and anything that warns. A change to one reel is that reel's own (`change` in its work folder), by you or a subagent.
+Whisper uses its default model (about 150 MB).
 
-Without subagents, edit them one after another, and while one renders, answer the next one's questions.
+## Edit asks (step 6)
 
-## Steps
+The edit asks for these, in order:
+1. Where the face is.
+2. What shows over the footage (for a landscape take, also what each shot shows).
+3. The plan of the cut.
+4. A listen to the cuts.
+5. One or two read-throughs.
+6. The script map and its visuals: map every word into sections first, then give each must-see section the visual that shows it best within the settings.
+7. A look at stills of the finished edit.
 
-1. **Tools:** `node --version` (20 or later) and `ffmpeg -version`. Install what's missing, after one line asking: macOS `brew install node ffmpeg`; Windows `winget install -e --id OpenJS.NodeJS.LTS` and `winget install -e --id Gyan.FFmpeg`, then a new terminal; Linux the system's packages.
-2. **Kit:** the kit is in the local-editing skill's `kit` folder, next to this skill's folder (`../local-editing/kit`). Read its `version.json`; its `version` is `<v>`. If `.infopros/render-kit/<v>` is missing in the current folder, copy the kit there and install Remotion, with npm's cache there too: `mkdir -p .infopros/render-kit/<v> && cp -R "<kit folder>/." .infopros/render-kit/<v> && npm install --prefix .infopros/render-kit/<v> --cache .infopros/cache/npm --no-audit --no-fund` (PowerShell: `New-Item -ItemType Directory -Force .infopros\render-kit\<v>`, `Copy-Item -Recurse -Force "<kit folder>\*" .infopros\render-kit\<v>`, then the same `npm install`). Below, `render.mjs` is `.infopros/render-kit/<v>/render.mjs` and `<work>` is `infopros-edits/<take name>-<style>`.
-3. **Start:** `node render.mjs start "<original>" <work>`, or for an ad made of parts of recordings `node render.mjs start <work> --part "<file>@<from>-<to>" --part ...` (seconds; in order; `@<from>-` to the end, no range for a whole file), which joins them into one take. With no settings it's the house default: the hook title highlighted (dark type on a white box), simple captions, nothing else on screen, and a light camera (a small zoom only when the video holds still too long, never when the speaker is already close). The reel's look as four settings, each optional:
-   - `--colors brand` (the client's design system or the look they show you; the default), `custom` (their colors: `--color accent=#rrggbb`, also `primary`, `page`, `surface`, `text`, `onAccent`, `onPrimary`), or `footage` (the take's own colors).
-   - `--energy light` (the default: the frame as filmed, a small zoom only on a long still stretch or to hide a cut, none when the speaker is already close), `natural` (calm reframes every few seconds) or `brisk` (tight cuts, frequent reframes and punches, quiet sound effects).
-   - `--captions simple` (Instagram's own, the default), `bold` (condensed capitals with the word being said and highlights in the accent), `box` (white on a dark box, for busy footage), `inverted` (each letter the negative of the picture behind it) or `stacked` (two tiers: a small running line and the key words big, the Dany Iles look; it shows no graphics).
-   - `--visuals none` (the default: captions and hook only; in the rare case the speaker clearly points at spots in empty air, text at those spots), `light` (typed lines, a stat or a comment box), `standard` (cards and effects at the moments that carry the ad) or `rich` (effects wherever a line fits).
-   Or start from a style name, which sets all four, and change any of them: `--style cinematic` (brand, brisk, simple, rich), `fun` (brand, natural, simple, standard), `simple` (footage, natural, simple, standard) or `stacked` (brand, brisk, stacked, none). For fun-style extras add `--punch-ins` (punch-ins with key-idea badges), `--active-word` (with bold captions) or `--extended-hook`. A brand file in OS's brand kit shape goes in with `--brand <brand.json>`; a look they show you with `--look-website <url>`, `--look-screenshot <file>` or `--look-request "<words>"`. Add `--notes "<what they told you>"` with the offer, who it's for, what to keep or cut; never invent any of it. It writes the take's sound to `<work>/audio.m4a`.
-4. **Transcript:** never twice, in this order: OS, their OpenRouter key, Whisper. When `start` printed `"transcript": "ready (from saved transcripts)"`, every recording of the take was transcribed before and its words are in place: skip this step. Otherwise, whichever transcribes it, the recording's transcript is kept in `infopros-edits/transcripts` for next time.
-   - **OS:** `transcribe` with `audio.m4a`'s name and bytes, PUT it as the tool says, `get_transcript` about every 30 seconds until ready, then `node render.mjs import-transcript <work> "<its links.words URL>"`.
-   - **With their OpenRouter key**, when OS can't and they have one: `node render.mjs transcribe <work>` transcribes as OS does (Scribe) straight from this computer, and the edit's cuts are listened to the same way. The key goes in `.infopros/openrouter.key` (the key alone, one line): ask them in one line to save it there themselves; never ask for it in the chat, and never print or read it out.
-   - **Whisper on this computer**, only when neither OS nor a key works: `node render.mjs transcribe <work> --whisper` (`--language es` for a known language); its timings are rougher than Scribe's. The first time it sets up a Python environment and a small speech model of about 150 MB; it needs Python 3.10 or later (macOS `brew install python`, Windows `winget install -e --id Python.Python.3.13` then a new terminal, Linux the system's `python3` and `python3-venv`).
-5. **Edit:** `node render.mjs edit <work>`. While it exits with code 3 it prints `asks`: for each, read the question file (and look at every picture it lists), write exactly one JSON value answering it to its answer file, then run `edit` again. Answer as the editor the question describes, following its rules to the letter: it asks where the face is, what shows over the footage (a landscape take also: what each shot shows), the plan of the cut, having OS listen to the cuts (`listen-...`, after each plan or read-through: do exactly what it says with OS's `listen_to_cut` and `get_listening`, and write the report as the answer; answer `null` only when OS can't be reached; with their OpenRouter key it isn't asked), one or two read-throughs, then a map of the script and the visuals planned from it (map every word into sections first, then give every must-see section the visual that shows it best, from everything the style allows), and a look at stills of the finished edit. Several can come at once: answer them all before running `edit` again. When done it prints the length, the script as cut, the hook, the call to action and the checks. If its checks warn "Key moments shown" (a must-see moment nothing shows, usually because the ad's attention budget left a big graphic out), give that moment a lighter visual with a change (step 8), such as "show the no quota contrast as typed lines".
-6. **Look:** Read `<work>/transcript-final.json` first: the edit as it plays, word by word; a restart, a repeated line or a cut-off word in it is a cut to fix with a change. Then `node render.mjs stills <work>`, then read the sheet it prints: no text over the eyes or mouth, nothing cut off, the hook readable. Fix anything wrong with step 8, then look again.
-7. **Render:** `node render.mjs render <work> <work>/"<title>.mp4"`. A few minutes; the first time it also downloads a browser of about 100 MB. If it prints `cutout: missing` (effects or a headline behind the speaker), run `node render.mjs setup-cutout` once on this computer (Python 3.10 or later) and render again. For cinematic, run `setup-cutout` before step 5 instead, so the look at the finished edit sees what will render. Tell them `Done: <file>` with its full path; if they want it in Downloads, copy it there (outside a sandbox, which can't write there).
-8. **Changes:** For a request tied to what is said ("whenever I say X, show Y"), find the moments in `<work>/transcript-final.json` (each word of the edit with its time as it plays) and give each with `--at`, without transcribing again. `node render.mjs change <work> "<their words>"` (`--at <seconds>` for the moment they point at, `--screenshot <file>` for a screenshot they gave). Answer its question as in step 5, then steps 6 and 7. Each change is a new version in `<work>/versions`. When it answers `reedit`, they want it done again: `start` with their request in `--notes`, then `edit <work> --fresh`.
+When the check "Key moments shown" warns, change it with a lighter visual, such as `"show the no quota contrast as typed lines"`.
 
-This reel isn't in OS. It doesn't get the Meta policy review; say so in one line if they plan to run it as an ad. If the cuts couldn't be listened to (no OS and no key), add that in the same line.
+## Stills (step 7)
 
-**If a step fails:** one line with what failed and what fixes it.
+Check that:
+- no text sits over the eyes or mouth;
+- nothing is cut off;
+- the hook is readable.
 
-The kit is built by OS (`scripts/build-render-kit.mjs`); don't edit it by hand.
+## Render (step 9)
+
+When it prints `cutout: missing`, run `node render.mjs setup-cutout` once on this computer (Python 3.10 or later), then render again. For `cinematic`, run `setup-cutout` before step 6, so the look at the finished edit sees what will render.
+
+## Deliver (step 11)
+
+The reel isn't in OS, so it gets no Meta policy review: say so in one line if they'll run it as an ad.
