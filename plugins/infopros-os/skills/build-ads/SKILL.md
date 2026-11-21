@@ -66,7 +66,9 @@ warning, such as an event that isn't firing). Ask "Create
 ## Names
 
 Every name is built from parts joined by ` | `. infopros-os builds ad names and copied campaign names itself; build
-campaign and ad set names for Meta's tools exactly like this:
+campaign and ad set names for Meta's tools like this. When the person gives a whole name, use it as given (`name` on
+`plan_ads`). A copied campaign whose name follows another style keeps its own name, with the new objective or date put
+in. Never stop to ask for a funnel, date or client just to build a name.
 
 - Campaign: `Client | Funnel | MM.DD.YY | Objective`, e.g. `Acme | Webinar | 11.04.26 | Sales`. The client as OS
   has it (`find`), the date of the webinar or launch, the objective one of Sales, Leads, Engagement, Traffic,
