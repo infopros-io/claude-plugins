@@ -1,6 +1,6 @@
 ---
 name: build-ads
-description: Upload ad creatives to a client's Meta ad account and build campaigns, ad sets and ads with Meta's own ads tools (meta-ads) and the infopros-os tools, named in the team's convention and always paused. Use when someone wants to upload creatives (Drive links or files), launch a campaign for a webinar, add new ads to an ad set, duplicate an ad and change its media, text or enhancements, or copy last launch's campaign for the next date, or check and publish (turn on) paused ads.
+description: Upload ad creatives to a client's Meta ad account and build campaigns, ad sets and ads with Meta's own ads tools (meta-ads) and the infopros-os tools, named in the team's convention and always paused. Use when someone wants to upload creatives (Drive links or files), launch a campaign for a webinar, add new ads to an ad set, duplicate an ad and change its media, text or enhancements, copy last launch's campaign for the next date, copy a campaign or ad set with another objective, conversion event or pixel ("copy it as Leads, optimizing for SubmitApplication"), or check and publish (turn on) paused ads.
 ---
 
 # Build ads
@@ -22,6 +22,12 @@ on until they have seen the check and said yes to turning those ads on.
   and video generation, translation and the rest off). Change single ones with `enhancements.on` / `off` only when
   asked. The copied ad itself is never changed.
 - **Copying last launch's campaign:** `plan_ads` with `duplicate_campaign`, then `create_planned_ads`.
+- **Copying with changes:** `plan_ads` with `duplicate_campaign` and `changes` (`objective`, `conversionEvent`,
+  `pixel`), for "same campaign, but Leads optimizing for SubmitApplication". Add `newDate` to also move it to the next
+  launch. To test events side by side in one campaign: `duplicate_ad_set` with `adSetToCopy` and
+  `changes.conversionEvent`. Only what's named changes; budget, audience, placements, schedule and ads stay. Never
+  rebuild it by hand with Meta's tools. When someone asks for another change to a copy that `changes` doesn't
+  take yet, say so instead of editing the copy afterwards.
 - **Publishing (turning ads on):** `plan_publish` (ads by name or number, an ad set, a campaign, or the ads a plan
   just made; `numbers.to` for "up to ad 20"), then `publish_planned_ads`. Only ads are turned on, never ad sets or
   campaigns.
@@ -41,8 +47,11 @@ on until they have seen the check and said yes to turning those ads on.
    - Copies of one ad: the ad to copy and, per copy, the new media and anything else that changes. A batch of
      uploads becomes one copy each, named after its media.
    - Next launch: last launch's campaign and the new date.
+   - Same campaign with another goal: the campaign, the objective, the conversion event (and the pixel only if it
+     changes). Ask for the event if they only name the objective.
 4. **Confirm.** Show the plan in a few lines: campaign name and budget, ad set names, ad names, link (for copies:
-   which ad, how many copies, what changes, enhancements off). Ask "Create
+   which ad, how many copies, what changes, enhancements off; for a copy with changes: each change from and to, and every
+warning, such as an event that isn't firing). Ask "Create
    it, paused?" and wait for a yes. One yes covers the whole plan.
 5. **Create.** For a new campaign: the campaign and ad sets with Meta's tools, then the ads with `plan_ads`
    (`add_ads`, once per ad set) and `create_planned_ads`, no new question. Otherwise `plan_ads` and
