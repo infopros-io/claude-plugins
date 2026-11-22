@@ -7,7 +7,7 @@ description: Edit a talking-head take into a long-form 16:9 video (a sales, VSL,
 
 Run the SOP in `../local-editing/SKILL.md`. This file holds what's specific to long form; step numbers refer to the SOP.
 
-## Before step 4
+## Before step 5
 
 Unless they've already said, ask in one line:
 - what the video is for and what it sells (the offer, its price, who it's for);
@@ -15,17 +15,17 @@ Unless they've already said, ask in one line:
 
 Never invent any of it.
 
-## Start flags (step 4)
+## Start flags (step 5)
 
 - Always pass `--style long --notes "<what they told you>"`. The work folder is `infopros-edits/<name>-long`.
 - **Their look:** `--look-website <url>`, `--look-screenshot <file>` (once per screenshot), `--look-request "<their words>"`, or `--brand <file>` (OS's BrandKit shape).
-- If Python 3.10 or later is installed, run `node render.mjs setup-cutout` before step 6, so pages can stand the speaker on them.
+- Run `node render.mjs setup-cutout` before step 7, so pages can stand the speaker on them.
 
-## Transcript (step 5)
+## Transcript (step 6)
 
 Whisper uses `--model small` (about 500 MB); a long take takes a few minutes. OS takes about a minute per 10 minutes of sound.
 
-## Edit asks (step 6)
+## Edit asks (step 7)
 
 The edit asks for these, in order:
 1. Where the face is, and what each still shows (in a few batches).
@@ -38,13 +38,16 @@ The edit asks for these, in order:
 
 When the check "Key moments shown" warns, give that moment a page with a change.
 
-## Stills (step 7)
+**Straight cuts** between takes, right after the first `edit`: `node render.mjs change <work> "straight cuts: motion.transitions none, motion.pushIns off"`. Pages may still come in with their own move; a take change on the speaker is a straight cut with the framing changed 10-15%, so the gate's picture audit passes.
+
+## Stills (step 8)
 
 Check that:
+- the skin looks natural, not orange;
 - each page is readable and in their look;
 - nothing covers the speaker's face;
 - nothing is cut off.
 
-## Render (step 9)
+## Render (step 10)
 
 A render takes about as long as the video, and longer for a 4K take. `cutout: missing` means the speaker shows in a window instead: run `setup-cutout` and render again, or leave it that way.
