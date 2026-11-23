@@ -55,12 +55,12 @@ def work_edit(work):
 
 
 def frame_rgb(f, t, lut=None, box=None):
-    vf = ",".join(([f"lut3d='{lut}'"] if lut else []) + ([f"crop={box[2]}:{box[3]}:{box[0]}:{box[1]}"] if box else []))
-    raw = run(["ffmpeg", "-v", "error", "-ss", f"{t:.3f}", "-i", f, "-frames:v", "1", *(["-vf", vf] if vf else []),
+    raw = run(["ffmpeg", "-v", "error", "-ss", f"{t:.3f}", "-i", f, "-frames:v", "1", *(["-vf", f"lut3d='{lut}'"] if lut else []),
                "-f", "rawvideo", "-pix_fmt", "rgb48le", "-"])
-    w, h = (box[2], box[3]) if box else [int(v) for v in run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries",
-                                                             "stream=width,height", "-of", "csv=p=0", f]).decode().split(",")[:2]]
-    return np.frombuffer(raw, np.uint16).reshape(h, w, 3).astype(np.float64) / 65535
+    w, h = [int(v) for v in run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height",
+                                 "-of", "csv=p=0", f]).decode().split(",")[:2]]
+    img = np.frombuffer(raw, np.uint16).reshape(h, w, 3).astype(np.float64) / 65535
+    return img[box[1]:box[1] + box[3], box[0]:box[0] + box[2]] if box else img  # cropped here: ffmpeg rounds odd crops
 
 
 def lab(rgb):  # display Rec.709 (gamma 2.4) -> CIE Lab D65
@@ -217,6 +217,7 @@ def cmd_sound(a):
     # 0. every cut sits in a real pause of the raw take, on both sides (>= 150 ms under -45 dB)
     for k in range(1, len(segs)):
         out_t = (segs[k - 1]["srcFromFrame"] + segs[k - 1]["durationInFrames"]) / fps; in_t = segs[k]["srcFromFrame"] / fps
+        if 0 <= in_t - out_t < 0.1: continue  # removes almost nothing: the speech runs on as recorded, not a join
         po, pi = raw_pause(original, out_t, a.floor), raw_pause(original, in_t, a.floor)
         for side, ms, t in (("outgoing", po, out_t), ("incoming", pi, in_t)):
             if ms >= a.min_ms: continue
@@ -290,14 +291,16 @@ def cmd_cuts(a):
         if len(before) < 4 or len(after) < 4: continue
         normal = max(np.mean([np.abs(f[i + 1].astype(float) - f[i].astype(float)).mean() for f in (before, after) for i in range(3)]), 0.5)
         pose = np.abs(before[-1].astype(float) - after[0].astype(float)).mean() / normal
-        fa, fb = faces(before[-1], model), faces(after[0], model)
+        fa, fb, settled = faces(before[-1], model), faces(after[0], model), faces(after[2], model)  # settled: 2 frames on
         jump = size = None
-        if fa is not None and fb is not None:
-            jump = 100 * np.hypot(fa[0] + fa[2] / 2 - fb[0] - fb[2] / 2, fa[1] + fa[3] / 2 - fb[1] - fb[3] / 2) / fa[2]
-            size = 100 * abs(fb[2] - fa[2]) / fa[2]
+        if fa is not None and settled is not None:
+            jump = 100 * np.hypot(fa[0] + fa[2] / 2 - settled[0] - settled[2] / 2, fa[1] + fa[3] / 2 - settled[1] - settled[3] / 2) / fa[2]
+            size = 100 * abs(settled[2] - fa[2]) / fa[2]
         tr = trans.get(at, "") + (" push-in ends here" if at in push_ends else "")
         flags = []
         if tr.strip(): flags.append(f"transition/zoom at the cut ({tr.strip()})")
+        if size is not None and size >= 8 and fb is not None and abs(fb[2] - fa[2]) / fa[2] < 0.04:
+            flags.append("the punch-in lands a frame or two after the cut, so the new take flashes at the old framing first")
         if size is not None and size < 8 and segs[k]["srcFromFrame"] != segs[k - 1]["srcFromFrame"] + segs[k - 1]["durationInFrames"]:
             flags.append(f"framing changes only {size:.0f}% (want 10-15%: alternate 100/110%)")
         if jump is not None and jump > 10 and (size or 0) < 8: flags.append(f"face jumps {jump:.0f}% with no punch-in")

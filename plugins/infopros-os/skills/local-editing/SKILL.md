@@ -42,7 +42,7 @@ Talk in one short line at a time: what you need from them, or what's done.
    2. **Their OpenRouter key** in `.infopros/openrouter.key`: ask once whether they have one.
    3. **Whisper on this computer.** It merges a restart into one copy, so retakes can survive the cut. Say so in the done line.
 
-   **With a key, check its credits** before every batch: `curl -s https://openrouter.ai/api/v1/key -H "Authorization: Bearer $(cat .infopros/openrouter.key)"` and read `data.limit_remaining` (`null` is no limit). When credits run out mid-batch, the kit skips listening to its cuts without saying so. Little or nothing left: ask them to top up first.
+   **With a key, check its credits** before every batch: `curl -s https://openrouter.ai/api/v1/key -H "Authorization: Bearer $(cat .infopros/openrouter.key)"` and read `data.limit_remaining`: the key's own cap (`null` is no cap). The account's balance is separate and a normal key can't read it, so ask them once to confirm it at openrouter.ai/settings/credits. When credits run out mid-batch, the kit skips listening to its cuts without saying so; any `402` from OpenRouter means stop and top up.
    Done when you know which one, and a key has credits for the batch.
 
 4. **Footage.** Prepare each recording once, before `start`:
