@@ -22,7 +22,7 @@ Talk in one short line at a time: what you need from them, or what's done.
 - **The kit as shipped:** use it as it is. A case it can't handle goes in the done line; the kit and OS's code are changed only in their own task.
 - **Long commands:** `edit`, `change` and `render` can take 5 minutes; a batch, longer. Run each in the background with a 30-minute limit (`timeout 1800 node ...` where `timeout` exists) and wait for its notification. The headless browser can keep a command alive after its work is done: a printed summary (`edit`, `change`) or a finished mp4 (`render`) is success, then stop the process.
 - **At once on one computer:** at most 3 edits and 2 renders. More, and face tracking and renders time out.
-- **The OpenRouter key** lives in `.infopros/openrouter.key`, saved there by them. Ask for it only that way; never print it or read it out.
+- **The OpenRouter key** lives in `.infopros/openrouter.key`, saved there by them. Ask for it only that way; never print it or read it out. The kit uses an `OPENROUTER_API_KEY` set in the shell before that file, and a shell profile can hold someone's personal key: run every kit command with it cleared (`env -u OPENROUTER_API_KEY node render.mjs ...`).
 - **Retakes:** the edit keeps the last complete, clean try of each line, or an earlier one when the last drops words. A restart breaks off and says the same words again; a repeat that makes a point ("I buy the house. I buy the house.") stays.
 - **Checks:** `qa` below is `.infopros/qa/bin/python -I "<this folder>/scripts/edit_qa.py"` (Windows: `.infopros\qa\Scripts\python`). `qa <command> --help` explains each.
 
